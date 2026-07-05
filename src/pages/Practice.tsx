@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWords } from '../hooks/useWords';
 import { useDictionaries } from '../hooks/useDictionaries';
+import type { Word } from '../lib/types';
 import { calculateSM2 } from '../utils/sm2';
 import Flashcard from '../components/Flashcard';
 import QuizMode from '../components/QuizMode';
