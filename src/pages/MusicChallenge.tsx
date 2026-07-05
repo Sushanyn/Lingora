@@ -174,14 +174,16 @@ export default function MusicChallenge() {
     const query = `${artistName} ${trackName} audio`;
     
     playerRef.current = new window.YT.Player('yt-player-container', {
-      height: '0',
-      width: '0',
+      height: '200',
+      width: '200',
+      videoId: 'dQw4w9WgXcQ', // Dummy video ID required to initialize player
       playerVars: {
         autoplay: 1,
         controls: 0,
         disablekb: 1,
         listType: 'search',
-        list: query
+        list: query,
+        origin: window.location.origin
       },
       events: {
         onReady: (event: any) => {
