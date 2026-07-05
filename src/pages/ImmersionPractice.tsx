@@ -87,32 +87,30 @@ export default function ImmersionPractice() {
     }
   };
 
-  const handleReplay = () => {
-    if (widgetRef.current) {
-      widgetRef.current.replay();
-    }
-  };
-
   const cleanString = (str: string) => {
     return str.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").toLowerCase().trim();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!currentCaption) return;
 
     const cleanedInput = cleanString(inputValue);
     const cleanedTranscript = cleanString(currentCaption);
 
-    // Fuzzy matching
     const similarity = stringSimilarity.compareTwoStrings(cleanedInput, cleanedTranscript);
     
     if (similarity > 0.8) {
       setIsCorrect(true);
+      setShowFeedback(true);
+      // Auto-advance after 1.5s
+      setTimeout(() => {
+        handleNext();
+      }, 1500);
     } else {
       setIsCorrect(false);
+      setShowFeedback(true);
     }
-    setShowFeedback(true);
   };
 
   const handleNext = () => {
@@ -124,81 +122,59 @@ export default function ImmersionPractice() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   if (error) return <div className="immersion-error">{error}</div>;
 
   return (
-    <div className="immersion-container">
-      <div className="immersion-header">
-        <h2>🎬 Immersion Mode</h2>
-        <p className="immersion-subtitle">
-          Watch real movie clips containing the word: <strong className="highlight-word">{word}</strong>
-          {totalTracks > 0 && <span className="track-count">({totalTracks} tracks found)</span>}
-        </p>
+    <div className="immersion-container-simple">
+      <div className="immersion-header-simple">
+        <h2>Immersion: <span className="highlight-word">{word}</span></h2>
+        {totalTracks > 0 && <span className="track-count">{totalTracks} clips found</span>}
       </div>
 
-      <div className="immersion-layout">
-        {/* Left Side: Video Player */}
-        <div className="video-section card">
-          <div className="video-wrapper">
-            <div id="youglish-widget" className="youglish-container">
-              {loading && <div className="immersion-loading">Loading videos... 🍿</div>}
-            </div>
-          </div>
+      <div className="video-card-simple">
+        <div id="youglish-widget" className="youglish-container-simple">
+          {loading && <div className="immersion-loading">Loading YouGlish... 🍿</div>}
+        </div>
+      </div>
+
+      {!loading && (
+        <div className="dictation-card-simple">
+          <textarea 
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (showFeedback && !isCorrect) setShowFeedback(false); // Hide error while typing
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder="Close your eyes, listen, and type what you hear... (Press Enter to check)"
+            disabled={isCorrect}
+            className={`dictation-input-simple ${showFeedback ? (isCorrect ? 'input-correct' : 'input-incorrect') : ''}`}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            rows={2}
+          />
           
-          {!loading && (
-            <div className="video-controls">
-              <button onClick={handleReplay} className="btn-secondary replay-btn">
-                <span className="icon">🔁</span> Replay Clip
-              </button>
-              <button onClick={handleNext} className="btn-secondary next-vid-btn">
-                <span className="icon">⏭️</span> Skip to Next Video
-              </button>
+          {showFeedback && !isCorrect && (
+            <div className="feedback-hint-simple">
+              <p><strong>Hint:</strong> "{currentCaption}"</p>
+            </div>
+          )}
+          {showFeedback && isCorrect && (
+            <div className="feedback-success-simple">
+              <p>✨ Perfect! Loading next clip...</p>
             </div>
           )}
         </div>
-
-        {/* Right Side: Dictation Challenge */}
-        {!loading && (
-          <div className="dictation-section card">
-            <div className="challenge-header">
-              <h3>✍️ Dictation Challenge</h3>
-              <span className="badge-optional">Optional</span>
-            </div>
-            
-            <div className="dictation-instructions">
-              <p>Close your eyes, listen to the clip, and type exactly what you hear!</p>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="dictation-form">
-              <textarea 
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type the sentence here..."
-                disabled={showFeedback}
-                className="dictation-textarea"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck="false"
-                rows={3}
-              />
-              {!showFeedback && <button type="submit" className="btn-primary check-btn">Check My Answer</button>}
-            </form>
-
-            {showFeedback && (
-              <div className={`feedback-box ${isCorrect ? 'correct' : 'incorrect'}`}>
-                <h3>{isCorrect ? '✨ Perfect Match!' : '💪 Keep practicing!'}</h3>
-                <div className="transcript-comparison">
-                  <p className="actual-transcript"><strong>They said:</strong> "{currentCaption}"</p>
-                </div>
-                <button onClick={handleNext} className="btn-primary next-btn">
-                  Play Next Clip ➔
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
