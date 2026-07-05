@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWords } from '../hooks/useWords';
+import { useDictionaries } from '../hooks/useDictionaries';
 import { useProfile } from '../hooks/useProfile';
 import type { Word } from '../lib/types';
 import { calculateSM2 } from '../utils/sm2';
@@ -15,8 +16,6 @@ const PracticeFlashcards = () => {
   const { words, loading, error, updateWordProgress } = useWords(dictId || '');
   const { updateStreak } = useProfile();
   
-  const dueWords = words.filter(w => !w.next_review_date || new Date(w.next_review_date) <= new Date());
-  
   const [isFinished, setIsFinished] = useState(false);
   
   // Flashcard State
@@ -25,20 +24,22 @@ const PracticeFlashcards = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredCount, setMasteredCount] = useState(0);
 
+  const { dictionaries } = useDictionaries();
+  const dictionary = dictionaries.find(d => d.id === dictId);
+
   useEffect(() => {
     if (words.length > 0 && queue.length === 0 && !isFinished) {
-      const shuffled = [...dueWords].sort(() => Math.random() - 0.5);
-      if (shuffled.length > 0) {
-        setQueue(shuffled);
+      const due = words.filter(w => !w.next_review_date || new Date(w.next_review_date) <= new Date());
+      if (due.length > 0) {
+        setQueue([...due].sort(() => Math.random() - 0.5));
         setCurrentIndex(0);
         setMasteredCount(0);
         setIsFlipped(false);
       } else {
-        // If no due words, just finish immediately
         setIsFinished(true);
       }
     }
-  }, [words, dueWords, queue.length, isFinished]);
+  }, [words, queue.length, isFinished]);
 
   const handleSR = async (quality: number) => {
     const currentWord = queue[currentIndex];
@@ -95,12 +96,18 @@ const PracticeFlashcards = () => {
   if (isFinished) {
     return (
       <div className="practice-finished">
-        <div className="finished-mascot">🐼🎉</div>
-        <h1 className="finished-title">Session Complete!</h1>
-        <p className="finished-desc">You've successfully reviewed {masteredCount} words.</p>
+        <div className="finished-mascot">{masteredCount === 0 ? '🐼✨' : '🐼🎉'}</div>
+        <h1 className="finished-title">{masteredCount === 0 ? 'All caught up!' : 'Session Complete!'}</h1>
+        <p className="finished-desc">
+          {masteredCount === 0 
+            ? "There are no words due for review right now. Come back later!" 
+            : `You've successfully reviewed ${masteredCount} words.`}
+        </p>
         <div className="finished-actions">
           <button onClick={() => navigate('/practice')} className="btn-secondary">Back to Hub</button>
-          <button onClick={() => window.location.reload()} className="btn-primary">Practice Again</button>
+          {masteredCount > 0 && (
+            <button onClick={() => window.location.reload()} className="btn-primary">Practice Again</button>
+          )}
         </div>
       </div>
     );
@@ -133,7 +140,7 @@ const PracticeFlashcards = () => {
             term={currentWord.term} 
             definition={currentWord.definition} 
             exampleSentence={currentWord.example_sentence}
-            targetLanguage="en"
+            targetLanguage={dictionary?.target_language || 'en'}
             isFlipped={isFlipped}
             onFlip={() => setIsFlipped(!isFlipped)}
           />

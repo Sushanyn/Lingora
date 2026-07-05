@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import stringSimilarity from 'string-similarity';
 import type { Dictionary, Word } from '../lib/types';
 import './ListeningChallenge.css';
@@ -10,6 +11,7 @@ type Phase = 'setup' | 'playing' | 'results';
 
 export default function ListeningChallenge() {
   const { session } = useAuth();
+  const { updateStreak } = useProfile();
   const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>('setup');
@@ -144,6 +146,7 @@ export default function ListeningChallenge() {
         speak(words[nextIdx].term);
       }, 300);
     } else {
+      updateStreak();
       setPhase('results');
     }
   };

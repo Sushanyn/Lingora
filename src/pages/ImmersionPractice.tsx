@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import stringSimilarity from 'string-similarity';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import './ImmersionPractice.css';
 
 declare global {
@@ -366,6 +367,7 @@ function PlayerScreen({
   language: string;
   onExit: () => void;
 }) {
+  const { updateStreak } = useProfile();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [noResults, setNoResults] = useState(false);
@@ -502,6 +504,7 @@ function PlayerScreen({
 
   const handleNextWord = () => {
     if (isLastWord) {
+      updateStreak();
       onExit();
       return;
     }
@@ -510,6 +513,7 @@ function PlayerScreen({
 
   const handleSkipWord = () => {
     if (isLastWord) {
+      updateStreak();
       onExit();
       return;
     }

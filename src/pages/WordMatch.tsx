@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import type { Dictionary } from '../lib/types';
 import './WordMatch.css';
 
@@ -17,6 +18,7 @@ interface Tile {
 
 export default function WordMatch() {
   const { session } = useAuth();
+  const { updateStreak } = useProfile();
   const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>('setup');
@@ -66,10 +68,11 @@ export default function WordMatch() {
   useEffect(() => {
     if (phase === 'playing' && tiles.length > 0) {
       if (tiles.every(t => t.status === 'matched')) {
+        updateStreak();
         setTimeout(() => setPhase('results'), 500);
       }
     }
-  }, [tiles, phase]);
+  }, [tiles, phase, updateStreak]);
 
   const startGame = async () => {
     setSetupError(null);
@@ -250,6 +253,9 @@ export default function WordMatch() {
             </button>
             <button className="wm-btn-secondary" onClick={() => setPhase('setup')}>
               ⚙️ Setup
+            </button>
+            <button className="wm-btn-secondary" onClick={() => navigate('/practice')}>
+              🔙 Back to Hub
             </button>
           </div>
         </div>

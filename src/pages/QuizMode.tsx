@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import stringSimilarity from 'string-similarity';
 import type { Dictionary, Word } from '../lib/types';
 import './QuizMode.css';
@@ -23,6 +25,8 @@ interface Question {
 
 export default function QuizMode() {
   const { session } = useAuth();
+  const { updateStreak } = useProfile();
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<QuizPhase>('setup');
   
   // Setup state
@@ -191,6 +195,7 @@ export default function QuizMode() {
       setCurrentQIdx(prev => prev + 1);
       resetInteractionState();
     } else {
+      updateStreak();
       setPhase('results');
     }
   };
@@ -207,6 +212,11 @@ export default function QuizMode() {
   if (phase === 'setup') {
     return (
       <div className="quiz-container">
+        <div className="quiz-header" style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
+          <button onClick={() => navigate('/practice')} className="quit-btn" style={{ background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', padding: '0.5rem 1rem', borderRadius: '20px', cursor: 'pointer' }}>
+            ✖ Back to Hub
+          </button>
+        </div>
         <div className="quiz-card setup-card">
           <div className="setup-header">
             <span className="setup-icon">🧠</span>
@@ -461,6 +471,9 @@ export default function QuizMode() {
             </button>
             <button className="res-btn-secondary" onClick={() => setPhase('setup')}>
               ⚙️ Back to Setup
+            </button>
+            <button className="res-btn-secondary" onClick={() => navigate('/practice')}>
+              🔙 Back to Hub
             </button>
           </div>
         </div>
