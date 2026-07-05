@@ -160,7 +160,7 @@ export default function MusicChallenge() {
     }
   };
 
-  const initYouTubePlayer = (trackName: string, artistName: string) => {
+  const initYouTubePlayer = async (trackName: string, artistName: string) => {
     if (!window.YT || !window.YT.Player) {
       // Retry if API not ready yet
       setTimeout(() => initYouTubePlayer(trackName, artistName), 500);
@@ -172,40 +172,54 @@ export default function MusicChallenge() {
     }
 
     const query = `${artistName} ${trackName} audio`;
-    
-    playerRef.current = new window.YT.Player('yt-player-container', {
-      height: '200',
-      width: '200',
-      videoId: 'dQw4w9WgXcQ', // Dummy video ID required to initialize player
-      playerVars: {
-        autoplay: 1,
-        controls: 0,
-        disablekb: 1,
-        listType: 'search',
-        list: query,
-        origin: window.location.origin
-      },
-      events: {
-        onReady: (event: any) => {
-          setIsLoadingAudio(false);
-          event.target.playVideo();
-          startProgressTimer();
-        },
-        onStateChange: (event: any) => {
-          if (event.data === window.YT.PlayerState.ENDED) {
-            finishGame();
-          } else if (event.data === window.YT.PlayerState.PLAYING) {
-            setIsPlaying(true);
-          } else if (event.data === window.YT.PlayerState.PAUSED) {
-            setIsPlaying(false);
-          }
-        },
-        onError: () => {
-          alert("YouTube audio failed to load.");
-          setIsLoadingAudio(false);
-        }
+
+    try {
+      const searchRes = await fetch(`/api/music?action=youtube&q=${encodeURIComponent(query)}`);
+      if (!searchRes.ok) {
+        throw new Error('Failed to fetch YouTube ID');
       }
-    });
+      const searchData = await searchRes.json();
+      
+      if (!searchData.id) {
+        throw new Error('No video ID returned');
+      }
+
+      playerRef.current = new window.YT.Player('yt-player-container', {
+        height: '200',
+        width: '200',
+        videoId: searchData.id,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          origin: window.location.origin
+        },
+        events: {
+          onReady: (event: any) => {
+            setIsLoadingAudio(false);
+            event.target.playVideo();
+            startProgressTimer();
+          },
+          onStateChange: (event: any) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              finishGame();
+            } else if (event.data === window.YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+            } else if (event.data === window.YT.PlayerState.PAUSED) {
+              setIsPlaying(false);
+            }
+          },
+          onError: () => {
+            alert("YouTube audio failed to load.");
+            setIsLoadingAudio(false);
+          }
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      alert("К сожалению, видео не найдено или не настроен YOUTUBE_API_KEY.");
+      setIsLoadingAudio(false);
+    }
   };
 
   const togglePlayPause = () => {
