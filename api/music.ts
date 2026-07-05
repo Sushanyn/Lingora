@@ -39,7 +39,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing query parameter q' });
       }
 
-      // Search YouTube for the video ID (usually we append 'audio' or 'lyric video' to get best results)
+      try {
+        // Try DuckDuckGo HTML search first (less likely to be blocked by Vercel IPs)
+        const ddgRes = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(q + ' audio youtube')}`);
+        const html = await ddgRes.text();
+        // DuckDuckGo redirects to youtube via something like /url?q=https://www.youtube.com/watch?v=VIDEO_ID
+        const match = html.match(/v%3D([a-zA-Z0-9_-]{11})/);
+        if (match && match[1]) {
+          return res.status(200).json({ id: match[1], title: q });
+        }
+      } catch (e) {
+        console.warn('DDG search failed, falling back to youtube-sr', e);
+      }
+
+      // Fallback to youtube-sr if DDG fails
       const video = await YouTube.searchOne(`${q} audio`);
       if (!video) {
         return res.status(404).json({ error: 'No YouTube video found' });
