@@ -1,0 +1,112 @@
+.error-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  padding: 2rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.error-container {
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 2;
+}
+
+/* Panda Scene */
+.panda-scene {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  margin-bottom: 2rem;
+}
+
+.bamboo-stick {
+  position: absolute;
+  width: 15px;
+  height: 250px;
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  border-radius: 10px;
+  bottom: -50px;
+  box-shadow: inset -3px 0 5px rgba(0,0,0,0.2);
+}
+
+/* Bamboo nodes */
+.bamboo-stick::after {
+  content: '';
+  position: absolute;
+  top: 50px;
+  left: -2px;
+  width: 19px;
+  height: 4px;
+  background-color: #15803d;
+  box-shadow: 0 50px 0 #15803d, 0 100px 0 #15803d, 0 150px 0 #15803d;
+}
+
+.b1 { left: 40px; transform: rotate(-15deg); }
+.b2 { left: 140px; transform: rotate(5deg); height: 280px; }
+.b3 { left: 240px; transform: rotate(20deg); }
+
+.panda-sleeping {
+  position: absolute;
+  font-size: 8rem;
+  bottom: 20px;
+  left: 60px;
+  transform: rotate(-10deg);
+  animation: breathing 4s ease-in-out infinite;
+  text-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+@keyframes breathing {
+  0% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(-10deg) scale(1.05); }
+  100% { transform: rotate(-10deg) scale(1); }
+}
+
+.error-code {
+  font-size: 8rem;
+  font-weight: 900;
+  color: var(--border-color);
+  margin: -4rem 0 0 0;
+  line-height: 1;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+.error-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.error-desc {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.error-details {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  border-radius: var(--border-radius-card);
+  color: #ef4444; /* red */
+  font-family: monospace;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.error-btn {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  padding: 0.75rem 2.5rem;
+  font-weight: 700;
+}

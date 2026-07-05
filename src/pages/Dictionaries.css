@@ -1,0 +1,146 @@
+.dictionaries-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dictionaries-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.create-btn {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.dictionaries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.dictionary-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dictionary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dict-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.dict-lang-badge {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.dict-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  opacity: 0.6;
+}
+
+.action-btn:hover {
+  opacity: 1;
+  background-color: var(--border-color);
+}
+
+.dict-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.dict-desc {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.dict-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+  margin-top: auto;
+}
+
+.word-count {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.word-count strong {
+  color: var(--text-primary);
+}
+
+.practice-btn {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-card);
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+}
+
+.empty-mascot {
+  font-size: 4rem;
+  opacity: 0.8;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+}

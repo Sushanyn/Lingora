@@ -1,0 +1,77 @@
+.import-modal {
+  max-width: 600px;
+}
+
+.import-instructions {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.file-drop-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-card);
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--bg-primary);
+  transition: border-color 0.2s, background-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.file-drop-area:hover {
+  border-color: var(--accent-primary);
+  background-color: rgba(16, 185, 129, 0.05);
+}
+
+.file-placeholder {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.file-selected {
+  color: var(--accent-primary);
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.import-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-btn);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.import-preview {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-card);
+  padding: 1rem;
+}
+
+.import-preview h3 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-item {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}

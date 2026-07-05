@@ -1,0 +1,28 @@
+.app-layout {
+  display: flex;
+  flex-direction: column-reverse; /* Mobile: content top, sidebar bottom */
+  height: 100vh;
+  width: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .app-layout {
+    flex-direction: row; /* Desktop: sidebar left, content right */
+  }
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  padding-bottom: 2rem; /* extra padding for bottom bar */
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    padding: 2rem;
+  }
+}
