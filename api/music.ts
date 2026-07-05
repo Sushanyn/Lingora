@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import YouTube from 'youtube-sr';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS setup
@@ -21,28 +22,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Missing query parameter q' });
       }
       
-      const response = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}`);
+      const response = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
+      if (!response.ok) {
+        return res.status(response.status).json({ error: 'Failed to fetch from LRCLIB' });
+      }
       const data = await response.json();
-      return res.status(200).json(data);
+      
+      // Filter for tracks that actually have synced lyrics
+      const validTracks = data.filter((track: any) => track.syncedLyrics);
+      return res.status(200).json(validTracks);
     } 
     
-    if (action === 'lyrics') {
-      const artist = req.query.artist as string;
-      const title = req.query.title as string;
-      if (!artist || !title) {
-        return res.status(400).json({ error: 'Missing artist or title parameters' });
+    if (action === 'youtube') {
+      const q = req.query.q as string;
+      if (!q) {
+        return res.status(400).json({ error: 'Missing query parameter q' });
       }
 
-      const response = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          return res.status(404).json({ error: 'Lyrics not found' });
-        }
-        return res.status(response.status).json({ error: 'Failed to fetch lyrics' });
+      // Search YouTube for the video ID (usually we append 'audio' or 'lyric video' to get best results)
+      const video = await YouTube.searchOne(`${q} audio`);
+      if (!video) {
+        return res.status(404).json({ error: 'No YouTube video found' });
       }
       
-      const data = await response.json();
-      return res.status(200).json(data);
+      return res.status(200).json({ id: video.id, title: video.title });
     }
 
     return res.status(400).json({ error: 'Invalid action parameter' });

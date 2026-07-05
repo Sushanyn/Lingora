@@ -12,7 +12,7 @@
 .music-challenge-header h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -51,93 +51,60 @@
   font-size: 1.1rem;
 }
 
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.track-card {
+.track-item {
+  display: flex;
+  align-items: center;
   background: var(--surface);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  padding: 1rem;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.track-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+.track-item:hover {
+  transform: translateY(-2px);
   border-color: var(--primary-color);
 }
 
-.track-image {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  background: #333;
-}
-
 .track-info {
-  padding: 1rem;
+  flex: 1;
 }
 
 .track-title {
-  font-weight: 600;
+  font-weight: bold;
+  font-size: 1.2rem;
   margin: 0 0 0.25rem 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .track-artist {
   color: var(--text-secondary);
-  font-size: 0.9rem;
   margin: 0;
 }
 
-/* Phase: Difficulty */
+.track-duration {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Phase: Difficulty & Mode */
 .difficulty-selector {
   text-align: center;
   max-width: 600px;
   margin: 0 auto;
 }
 
-.difficulty-card {
-  display: flex;
-  align-items: center;
-  padding: 2rem;
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-color);
-}
-
-.difficulty-card img {
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-  margin-right: 1.5rem;
-}
-
-.difficulty-card-info {
-  text-align: left;
-}
-
-.difficulty-card-info h3 {
-  margin: 0 0 0.25rem 0;
-}
-
-.difficulty-card-info p {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
 .difficulty-options {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .difficulty-btn {
@@ -155,77 +122,117 @@
   gap: 0.5rem;
 }
 
-.difficulty-btn:hover {
+.difficulty-btn.active {
   border-color: var(--primary-color);
-  background: rgba(var(--primary-rgb), 0.05);
+  background: rgba(var(--primary-rgb), 0.1);
 }
 
-.difficulty-btn.easy:hover { border-color: #10b981; color: #10b981; }
-.difficulty-btn.medium:hover { border-color: #f59e0b; color: #f59e0b; }
-.difficulty-btn.hard:hover { border-color: #ef4444; color: #ef4444; }
+.difficulty-btn:hover {
+  border-color: var(--primary-color);
+}
 
 .difficulty-btn span {
   font-size: 0.9rem;
   color: var(--text-muted);
 }
 
-/* Phase: Playing */
-.playing-container {
+.mode-selector {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
-.audio-controls {
-  position: sticky;
-  top: 1rem;
-  background: var(--surface);
+.mode-btn {
+  flex: 1;
   padding: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: none;
+  color: white;
+  transition: transform 0.2s;
+}
+
+.mode-btn:hover {
+  transform: scale(1.05);
+}
+
+.mode-btn.quick {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+.mode-btn.full {
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+}
+
+/* Phase: Playing (Karaoke UI) */
+.karaoke-container {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  background: var(--surface);
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.karaoke-header {
+  padding: 1.5rem;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
   z-index: 10;
 }
 
-.audio-controls img {
-  width: 60px;
-  height: 60px;
-  border-radius: 6px;
-}
-
-.audio-details {
-  flex: 1;
-}
-
-.audio-details h3 {
-  margin: 0 0 0.25rem 0;
-}
-
-.audio-details p {
-  margin: 0;
+.karaoke-progress {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-weight: bold;
 }
 
-.custom-audio {
-  width: 100%;
-  height: 40px;
-  margin-top: 0.5rem;
-  border-radius: 20px;
+.lyrics-viewport {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  scroll-behavior: smooth;
+  position: relative;
 }
 
-.lyrics-container {
-  background: var(--surface);
-  padding: 2.5rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  font-size: 1.3rem;
+.lyrics-content {
+  padding: 150px 0; /* Padding to allow scrolling to middle */
+}
+
+.lyric-line {
+  font-size: 1.5rem;
   line-height: 2.2;
-  white-space: pre-wrap;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+  filter: blur(0.5px);
+  opacity: 0.6;
+}
+
+.lyric-line.active {
   color: var(--text-primary);
+  font-size: 1.8rem;
+  font-weight: bold;
+  filter: blur(0);
+  opacity: 1;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.lyric-line.passed {
+  color: var(--text-secondary);
+  filter: blur(0);
+  opacity: 0.8;
 }
 
 .lyric-input {
@@ -234,18 +241,25 @@
   border: 2px solid var(--border-color);
   border-radius: 4px;
   color: var(--text-primary);
-  font-size: 1.1rem;
+  font-size: inherit;
   padding: 0.2rem 0.5rem;
   margin: 0 0.3rem;
   text-align: center;
   transition: all 0.3s;
   font-family: inherit;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.lyric-line.active .lyric-input {
+  border-color: #3b82f6;
+  background: var(--surface);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
 .lyric-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .lyric-input.correct {
@@ -253,6 +267,7 @@
   border-color: #10b981;
   color: #10b981;
   font-weight: bold;
+  text-shadow: none;
 }
 
 .lyric-input.revealed {
@@ -262,18 +277,8 @@
   font-style: italic;
 }
 
-.game-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.progress-text {
-  font-weight: bold;
-  color: var(--text-secondary);
+.hidden-player {
+  display: none;
 }
 
 /* Phase: Results */
@@ -289,14 +294,14 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #3b82f6);
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   margin: 0 auto 2rem;
-  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
 }
 
 .score-number {
