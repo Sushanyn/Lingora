@@ -85,9 +85,23 @@ export default function ListeningChallenge() {
       
       const voices = window.speechSynthesis.getVoices();
       const baseLang = fullLang.split('-')[0];
-      const targetVoice = voices.find(v => v.lang.startsWith(baseLang) || v.lang.replace('_', '-').startsWith(baseLang));
-      if (targetVoice) {
-        msg.voice = targetVoice;
+      
+      const matchingVoices = voices.filter(v => v.lang.startsWith(baseLang) || v.lang.replace('_', '-').startsWith(baseLang));
+      
+      if (matchingVoices.length > 0) {
+        // Prioritize high-quality, natural-sounding voices
+        const premiumVoice = matchingVoices.find(v => 
+          v.name.includes('Google') || 
+          v.name.includes('Premium') || 
+          v.name.includes('Enhanced') ||
+          v.name.includes('Siri') ||
+          v.name.includes('Natural')
+        );
+        
+        // Fallback to exact region match if no premium voice
+        const exactMatch = matchingVoices.find(v => v.lang === fullLang || v.lang.replace('_', '-') === fullLang);
+        
+        msg.voice = premiumVoice || exactMatch || matchingVoices[0];
       }
       
       window.speechSynthesis.speak(msg);
