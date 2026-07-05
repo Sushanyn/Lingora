@@ -7,6 +7,7 @@ import PracticeFlashcards from './pages/PracticeFlashcards';
 import WordMatch from './pages/WordMatch';
 import ListeningChallenge from './pages/ListeningChallenge';
 import ImmersionPractice from './pages/ImmersionPractice';
+import MusicChallenge from './pages/MusicChallenge';
 import Dictionaries from './pages/Dictionaries';
 import DictionaryView from './pages/DictionaryView';
 import Library from './pages/Library';
@@ -59,6 +60,7 @@ function App() {
         <Route path="practice/listen" element={<ListeningChallenge />} />
         <Route path="quiz" element={<QuizMode />} />
         <Route path="immersion" element={<ImmersionPractice />} />
+        <Route path="music-challenge" element={<MusicChallenge />} />
         
         <Route path="library" element={<Library />} />
         <Route path="statistics" element={<Statistics />} />

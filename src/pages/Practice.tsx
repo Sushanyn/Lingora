@@ -61,6 +61,15 @@ const PracticeHub = () => {
             </p>
           </div>
 
+          {/* Music Challenge */}
+          <div className="mode-card card" onClick={() => navigate('/music-challenge')} style={{ border: '2px solid rgba(var(--primary-rgb), 0.3)' }}>
+            <div className="mode-icon" style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎵</div>
+            <h2 style={{ marginBottom: '0.5rem' }}>Music Challenge <span style={{fontSize:'0.6rem', background:'var(--primary)', color:'#000', padding:'2px 6px', borderRadius:'10px', verticalAlign:'middle'}}>NEW</span></h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              Listen to 30-second previews and fill in the missing lyrics.
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
