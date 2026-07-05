@@ -8,6 +8,7 @@ import PandaSuggestModal from '../components/PandaSuggestModal';
 import './DictionaryView.css';
 import { supabase } from '../lib/supabase';
 import type { Dictionary } from '../lib/types';
+import { getLanguageLabel } from '../lib/languages';
 
 const DictionaryView = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +105,7 @@ const DictionaryView = () => {
 
       <div className="dict-view-header card">
         <div className="dict-view-title-section">
-          <span className="dict-lang-badge">{dictionary.target_language.toUpperCase()}</span>
+          <span className="dict-lang-badge">{getLanguageLabel(dictionary.target_language)}</span>
           <h1 className="page-title">{dictionary.title}</h1>
           <p className="page-subtitle">{dictionary.description}</p>
         </div>

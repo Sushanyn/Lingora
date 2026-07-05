@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDictionaries } from '../hooks/useDictionaries';
 import type { Dictionary } from '../lib/types';
+import { getLanguageLabel } from '../lib/languages';
 import DictionaryModal from '../components/DictionaryModal';
 import './Dictionaries.css';
 
@@ -74,7 +75,7 @@ const Dictionaries = () => {
               onClick={() => navigate(`/dictionaries/${dict.id}`)}
             >
               <div className="dict-header">
-                <span className="dict-lang-badge">{dict.target_language.toUpperCase()}</span>
+                <span className="dict-lang-badge">{getLanguageLabel(dict.target_language)}</span>
                 <div className="dict-actions">
                   <button onClick={(e) => handleOpenEdit(e, dict)} className="action-btn edit-btn" title="Edit">✏️</button>
                   <button onClick={(e) => handleDelete(e, dict.id, dict.title)} className="action-btn delete-btn" title="Delete">🗑️</button>

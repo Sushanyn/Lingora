@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LANGUAGES } from '../lib/languages';
 import './DictionaryModal.css';
 
 interface DictionaryModalProps {
@@ -68,12 +69,9 @@ const DictionaryModal = ({ initialData, onClose, onSave }: DictionaryModalProps)
                 onChange={(e) => setTargetLanguage(e.target.value)}
                 required
               >
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="cs">Czech</option>
-                <option value="uk">Ukrainian</option>
-                <option value="ru">Russian</option>
-                <option value="en">English</option>
+                {Object.entries(LANGUAGES).map(([code, { name, flag }]) => (
+                  <option key={code} value={code}>{flag} {name}</option>
+                ))}
               </select>
             </div>
 
@@ -84,12 +82,9 @@ const DictionaryModal = ({ initialData, onClose, onSave }: DictionaryModalProps)
                 onChange={(e) => setNativeLanguage(e.target.value)}
                 required
               >
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="cs">Czech</option>
-                <option value="uk">Ukrainian</option>
-                <option value="ru">Russian</option>
+                {Object.entries(LANGUAGES).map(([code, { name, flag }]) => (
+                  <option key={code} value={code}>{flag} {name}</option>
+                ))}
               </select>
             </div>
           </div>

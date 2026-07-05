@@ -1,4 +1,5 @@
 import { useLibrary } from '../hooks/useLibrary';
+import { getLanguageLabel } from '../lib/languages';
 import './Library.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -35,7 +36,7 @@ const Library = () => {
           {publicDictionaries.map((dict) => (
             <div key={dict.id} className="card library-card">
               <div className="dict-header">
-                <span className="dict-lang-badge">{dict.target_language.toUpperCase()}</span>
+                <span className="dict-lang-badge">{getLanguageLabel(dict.target_language)}</span>
                 <span className="public-badge">🌍 Public</span>
               </div>
               <h2 className="dict-title">{dict.title}</h2>
