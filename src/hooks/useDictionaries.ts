@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Dictionary } from '../lib/types';
 import { useAuth } from './useAuth';
+import { trackEvent } from '../lib/analytics';
 
 export function useDictionaries() {
   const { session } = useAuth();
@@ -52,6 +53,7 @@ export function useDictionaries() {
 
       if (error) throw error;
       setDictionaries((prev) => [{ ...data, wordCount: 0 }, ...prev]);
+      trackEvent('dictionary_created', { source: 'manual', language: dict.target_language });
     } catch (err: any) {
       alert(`Error creating dictionary: ${err.message}`);
     }

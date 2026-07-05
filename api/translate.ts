@@ -98,6 +98,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 2. Call DeepL API (if not in cache)
+
+    // --- Global Usage Cap Logic ---
+    const DEEPL_MONTHLY_LIMIT = parseInt(process.env.DEEPL_MONTHLY_CHAR_LIMIT || '400000', 10);
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    try {
+      const { data: newUsageCount, error: usageErr } = await supabase.rpc('increment_deepl_usage', {
+        month_val: currentMonth,
+        chars: text.length
+      });
+      
+      if (usageErr) {
+        console.warn('Failed to increment DeepL usage:', usageErr);
+      } else if (newUsageCount !== null && newUsageCount > DEEPL_MONTHLY_LIMIT) {
+        res.status(503).json({ error: 'Translation service temporarily at capacity' });
+        return;
+      }
+    } catch (e) {
+      console.warn('DeepL usage cap check failed, continuing:', e);
+    }
     const authKey = process.env.DEEPL_AUTH_KEY;
     if (!authKey) {
       res.status(500).json({ error: 'DeepL API key missing (set DEEPL_AUTH_KEY in Vercel Environment Variables)' });

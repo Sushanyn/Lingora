@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
+import { trackEvent } from '../lib/analytics';
 import type { Dictionary } from '../lib/types';
 import './WordMatch.css';
 
@@ -68,6 +69,7 @@ export default function WordMatch() {
   useEffect(() => {
     if (phase === 'playing' && tiles.length > 0) {
       if (tiles.every(t => t.status === 'matched')) {
+        trackEvent('practice_session_completed', { game: 'match' });
         updateStreak();
         setTimeout(() => setPhase('results'), 500);
       }
@@ -166,6 +168,7 @@ export default function WordMatch() {
                 localStorage.setItem('lingora_flash', 'true');
               }
               
+              trackEvent('practice_session_completed', { game: 'match' });
               setPhase('results');
             }, 500);
           }

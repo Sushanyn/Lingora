@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import stringSimilarity from 'string-similarity';
+import { trackEvent } from '../lib/analytics';
 import type { Dictionary, Word } from '../lib/types';
 import './ListeningChallenge.css';
 
@@ -200,7 +201,7 @@ export default function ListeningChallenge() {
       if (timeTaken < 30) {
         localStorage.setItem('lingora_flash', 'true');
       }
-      
+      trackEvent('practice_session_completed', { game: 'listening' });
       setPhase('results');
     }
   };

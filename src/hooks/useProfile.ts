@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
+import { trackEvent } from '../lib/analytics';
 
 export interface UserProfile {
   id: string;
@@ -43,6 +44,7 @@ export function useProfile() {
             
           if (!insertError && newProfile) {
             setProfile(newProfile as UserProfile);
+            trackEvent('signup_completed');
           }
         } else if (data) {
           setProfile(data as UserProfile);

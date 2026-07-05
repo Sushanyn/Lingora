@@ -44,6 +44,18 @@ serve(async (req) => {
   }
 
   try {
+    // Check idempotency: Have we already processed this event?
+    const { data: insertedEvent, error: insertError } = await supabase
+      .from('processed_stripe_events')
+      .insert({ event_id: event.id })
+      .select()
+      .single();
+
+    if (insertError || !insertedEvent) {
+      console.log(`Event ${event.id} already processed or DB error. Skipping.`);
+      return new Response(JSON.stringify({ received: true }), { status: 200 });
+    }
+
     // Handle the full subscription lifecycle
     switch (event.type) {
       

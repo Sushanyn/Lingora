@@ -1,11 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProfile } from '../hooks/useProfile';
+import { useAuth } from '../hooks/useAuth';
+import { trackEvent } from '../lib/analytics';
 import './Pricing.css';
 
 const Pricing = () => {
   const { profile, loading } = useProfile();
+  const { session } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+
+  useEffect(() => {
+    trackEvent('pricing_page_viewed');
+  }, []);
+
+  const handleManageSubscription = async () => {
+    try {
+      setIsProcessing(true);
+      const res = await fetch('/api/stripe-portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Failed to open billing portal');
+      }
+    } catch (e) {
+      alert('Error opening billing portal');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleSubscribe = async () => {
     setIsProcessing(true);
@@ -27,6 +56,8 @@ const Pricing = () => {
       setIsProcessing(false);
       return;
     }
+
+    trackEvent('checkout_started', { is_yearly: isYearly });
 
     // Redirect to Stripe Payment Link and securely pass the user ID
     window.location.href = `${paymentLink}?client_reference_id=${userId}`;
@@ -90,12 +121,12 @@ const Pricing = () => {
           </ul>
           
           <button 
-            onClick={handleSubscribe} 
+            onClick={profile?.is_premium ? handleManageSubscription : handleSubscribe} 
             className="btn-primary pricing-btn"
-            disabled={isProcessing || profile?.is_premium}
+            disabled={isProcessing}
           >
-            {isProcessing ? 'Processing Payment...' : 
-             profile?.is_premium ? 'Active Subscription' : (isYearly ? 'Subscribe Yearly' : 'Subscribe Monthly')}
+            {isProcessing ? 'Processing...' : 
+             profile?.is_premium ? 'Manage Subscription' : (isYearly ? 'Subscribe Yearly' : 'Subscribe Monthly')}
           </button>
 
           <p className="secure-checkout">

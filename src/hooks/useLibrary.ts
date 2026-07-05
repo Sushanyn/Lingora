@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Dictionary, Word } from '../lib/types';
 import { useAuth } from './useAuth';
+import { trackEvent } from '../lib/analytics';
 
 export function useLibrary() {
   const { session } = useAuth();
@@ -89,6 +90,7 @@ export function useLibrary() {
         if (bulkError) throw bulkError;
       }
       
+      trackEvent('dictionary_created', { source: 'clone', language: originalDict.target_language });
       alert('Dictionary cloned successfully! Check your Dictionaries tab.');
       return true;
     } catch (err: any) {

@@ -4,6 +4,7 @@ import stringSimilarity from 'string-similarity';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
+import { trackEvent } from '../lib/analytics';
 import './ImmersionPractice.css';
 
 declare global {
@@ -708,6 +709,7 @@ export default function ImmersionPractice() {
   };
 
   const handleExit = () => {
+    trackEvent('practice_session_completed', { game: 'immersion' });
     setPhase('results');
   };
 
