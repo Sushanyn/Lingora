@@ -392,17 +392,23 @@ function PlayerScreen({
     setShowFeedback(false);
     setIsCorrect(false);
     setCurrentCaption('');
+    hasPausedRef.current = false;
   }, []);
+
+  // Track whether we've already paused for the current caption segment
+  const hasPausedRef = useRef(false);
 
   const onCaptionConsumed = useCallback((event: any) => {
     if (event && event.text) {
       setCurrentCaption(event.text);
-      // Auto-pause after the phrase finishes
-      setTimeout(() => {
+      // Only pause once per caption segment
+      if (!hasPausedRef.current) {
+        hasPausedRef.current = true;
+        // Pause immediately — the phrase has been spoken
         if (widgetRef.current) {
           widgetRef.current.pause();
         }
-      }, 800);
+      }
     }
   }, []);
 
@@ -473,12 +479,16 @@ function PlayerScreen({
     }
   };
 
-  const handleReplay = () => widgetRef.current?.replay();
+  const handleReplay = () => {
+    hasPausedRef.current = false;
+    widgetRef.current?.replay();
+  };
 
   const handleNextClip = () => {
     setInputValue('');
     setShowFeedback(false);
     setIsCorrect(false);
+    hasPausedRef.current = false;
     widgetRef.current?.next();
   };
 

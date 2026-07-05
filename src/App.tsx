@@ -10,6 +10,9 @@ import Library from './pages/Library';
 import Profile from './pages/Profile';
 import Pricing from './pages/Pricing';
 import ErrorPage from './pages/ErrorPage';
+import QuizMode from './pages/QuizMode';
+import Statistics from './pages/Statistics';
+import Achievements from './pages/Achievements';
 import { useAuth } from './hooks/useAuth';
 
 // Protected Route Wrapper
@@ -48,7 +51,10 @@ function App() {
         <Route path="dictionaries/:id" element={<DictionaryView />} />
         <Route path="practice" element={<Practice />} />
         <Route path="immersion" element={<ImmersionPractice />} />
+        <Route path="quiz" element={<QuizMode />} />
         <Route path="library" element={<Library />} />
+        <Route path="statistics" element={<Statistics />} />
+        <Route path="achievements" element={<Achievements />} />
         <Route path="profile" element={<Profile />} />
         <Route path="pricing" element={<Pricing />} />
       </Route>
