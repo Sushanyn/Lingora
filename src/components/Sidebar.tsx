@@ -40,8 +40,6 @@ const Sidebar = () => {
   const navLinks = [
     { to: '/dictionaries', label: t('sidebar.dictionaries'), icon: '📚' },
     { to: '/practice', label: t('sidebar.practice'), icon: '🎯' },
-    { to: '/immersion', label: 'Immersion', icon: '🍿' },
-    { to: '/quiz', label: 'Quiz Mode', icon: '🧠' },
     { to: '/library', label: t('sidebar.library'), icon: '🌍' },
     { to: '/statistics', label: 'Statistics', icon: '📊' },
     { to: '/achievements', label: 'Achievements', icon: '🏆' },

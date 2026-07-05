@@ -3,6 +3,9 @@ import AppLayout from './layouts/AppLayout';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Practice from './pages/Practice';
+import PracticeFlashcards from './pages/PracticeFlashcards';
+import WordMatch from './pages/WordMatch';
+import ListeningChallenge from './pages/ListeningChallenge';
 import ImmersionPractice from './pages/ImmersionPractice';
 import Dictionaries from './pages/Dictionaries';
 import DictionaryView from './pages/DictionaryView';
@@ -49,9 +52,15 @@ function App() {
         <Route index element={<Home />} />
         <Route path="dictionaries" element={<Dictionaries />} />
         <Route path="dictionaries/:id" element={<DictionaryView />} />
+        
+        {/* Practice Hub and Mini-Games */}
         <Route path="practice" element={<Practice />} />
-        <Route path="immersion" element={<ImmersionPractice />} />
+        <Route path="practice/flashcards" element={<PracticeFlashcards />} />
+        <Route path="practice/match" element={<WordMatch />} />
+        <Route path="practice/listen" element={<ListeningChallenge />} />
         <Route path="quiz" element={<QuizMode />} />
+        <Route path="immersion" element={<ImmersionPractice />} />
+        
         <Route path="library" element={<Library />} />
         <Route path="statistics" element={<Statistics />} />
         <Route path="achievements" element={<Achievements />} />
