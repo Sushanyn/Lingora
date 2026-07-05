@@ -33,6 +33,16 @@ export default function ListeningChallenge() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [wrongWords, setWrongWords] = useState<Word[]>([]);
   
+  // Preload TTS voices
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+  
   // Fetch dictionaries on mount
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -57,6 +67,15 @@ export default function ListeningChallenge() {
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = language;
       msg.rate = 0.85; // slightly slower for language learners
+      
+      // Explicitly try to find a matching voice, as some browsers ignore msg.lang
+      const voices = window.speechSynthesis.getVoices();
+      const baseLang = language.split('-')[0];
+      const targetVoice = voices.find(v => v.lang.startsWith(baseLang) || v.lang.replace('_', '-').startsWith(baseLang));
+      if (targetVoice) {
+        msg.voice = targetVoice;
+      }
+      
       window.speechSynthesis.speak(msg);
     } else {
       alert("Text-to-speech is not supported in your browser.");
@@ -71,14 +90,14 @@ export default function ListeningChallenge() {
       
       const dict = dictionaries.find(d => d.id === selectedDict);
       if (dict) {
-        // Map common lang codes to speech synthesis codes
         const mapLang = (l: string) => {
+          const lower = l.toLowerCase();
           const m: Record<string, string> = {
             'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE',
             'it': 'it-IT', 'ja': 'ja-JP', 'ko': 'ko-KR', 'zh': 'zh-CN',
-            'ru': 'ru-RU', 'pt': 'pt-BR'
+            'ru': 'ru-RU', 'pt': 'pt-BR', 'uk': 'uk-UA', 'cs': 'cs-CZ'
           };
-          return m[l.toLowerCase()] || 'en-US';
+          return m[lower] || lower; // Use code directly if not in map (e.g. 'pl' for Polish)
         };
         setLanguage(mapLang(dict.target_language));
       }
