@@ -54,6 +54,7 @@ export default function MusicChallenge() {
   const [currentTime, setCurrentTime] = useState(0);
   const [activeLineIdx, setActiveLineIdx] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [autoPausedLineIdx, setAutoPausedLineIdx] = useState<number | null>(null);
 
   // Refs
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -116,13 +117,25 @@ export default function MusicChallenge() {
     }
 
     if (activeIdx !== activeLineIdx && activeIdx !== -1) {
+      if (activeLineIdx !== -1 && activeLineIdx < lyricsLines.length && autoPausedLineIdx !== activeLineIdx) {
+        const prevLine = lyricsLines[activeLineIdx];
+        const hasUnfilledBlanks = prevLine.words.some(w => typeof w !== 'string' && !w.isFilled);
+        
+        if (hasUnfilledBlanks && playerRef.current && isPlaying) {
+           playerRef.current.pauseVideo();
+           setIsPlaying(false);
+           setAutoPausedLineIdx(activeLineIdx);
+           return;
+        }
+      }
+
       setActiveLineIdx(activeIdx);
       const lineEl = lineRefs.current[activeIdx];
       if (lineEl && viewportRef.current) {
         lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [currentTime, lyricsLines, gameMode, phase, activeLineIdx]);
+  }, [currentTime, lyricsLines, gameMode, phase, activeLineIdx, isPlaying, autoPausedLineIdx]);
 
   // 1. Search iTunes
   const handleSearch = async (e?: React.FormEvent) => {
@@ -198,7 +211,7 @@ export default function MusicChallenge() {
       try { playerRef.current.destroy(); } catch (e) {}
     }
 
-    const query = `${artistName} ${trackName} audio`;
+    const query = `${artistName} ${trackName} Topic`;
 
     try {
       const searchRes = await fetch(`/api/music?action=youtube&q=${encodeURIComponent(query)}`);
@@ -341,6 +354,15 @@ export default function MusicChallenge() {
       if (newFilled === totalBlanks && totalBlanks > 0) {
         finishGame();
       }
+
+      const currentLine = lyricsLines[lineIdx];
+      const hasUnfilledBlanks = currentLine.words.some(w => typeof w !== 'string' && !w.isFilled);
+      if (!hasUnfilledBlanks && autoPausedLineIdx === lineIdx) {
+        if (playerRef.current) {
+          playerRef.current.playVideo();
+          setIsPlaying(true);
+        }
+      }
     }
   };
 
@@ -472,8 +494,14 @@ export default function MusicChallenge() {
             </div>
             <div className="karaoke-progress">
               <span>{Math.floor(currentTime)}s {gameMode === 'quick' && '/ 30s'}</span>
-              <span>•</span>
-              <span style={{ color: 'var(--primary-color)' }}>{filledBlanks} / {totalBlanks}</span>
+              <div className="progress-bar-container">
+                <div className="progress-bar-fill" style={{ width: `${Math.min(100, (currentTime / (gameMode === 'quick' ? 30 : 200)) * 100)}%` }}></div>
+              </div>
+              {autoPausedLineIdx === activeLineIdx && !isPlaying && (
+                <span style={{ color: 'var(--primary)', fontSize: '12px', marginLeft: '10px', whiteSpace: 'nowrap' }}>
+                  ⏸ Введите слово...
+                </span>
+              )}
             </div>
           </div>
 
