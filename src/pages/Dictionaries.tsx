@@ -90,6 +90,8 @@ const Dictionaries = () => {
                     e.stopPropagation();
                     navigate(`/practice?dict=${dict.id}`);
                   }}
+                  disabled={!dict.wordCount || dict.wordCount === 0}
+                  title={(!dict.wordCount || dict.wordCount === 0) ? "Add some words first" : "Practice"}
                 >
                   Practice
                 </button>

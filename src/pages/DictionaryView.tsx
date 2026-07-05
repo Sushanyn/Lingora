@@ -111,7 +111,14 @@ const DictionaryView = () => {
             <span className="stat-number">{words.length}</span>
             <span className="stat-label">Words</span>
           </div>
-          <button className="btn-primary practice-btn-large">Start Practice</button>
+          <button 
+            className="btn-primary practice-btn-large"
+            onClick={() => navigate(`/practice?dict=${dictionary.id}`)}
+            disabled={words.length === 0}
+            title={words.length === 0 ? "Add some words first" : "Start Practice"}
+          >
+            Start Practice
+          </button>
         </div>
       </div>
 

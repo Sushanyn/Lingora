@@ -117,6 +117,7 @@ export function useWords(dictionaryId: string) {
       );
     } catch (err: any) {
       console.error(`Error updating progress: ${err.message}`);
+      alert(`Failed to save progress for this word: ${err.message}`);
     }
   };
 
