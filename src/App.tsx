@@ -12,7 +12,7 @@ import ErrorPage from './pages/ErrorPage';
 import { useAuth } from './hooks/useAuth';
 
 // Protected Route Wrapper
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, loading } = useAuth();
 
   if (loading) {

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import './DictionaryModal.css';
 
 interface WordModalProps {
-  initialData?: { term: string; definition: string; example_sentence: string } | null;
+  initialData?: { term: string; definition: string; example_sentence?: string | null } | null;
   targetLanguage: string;
   nativeLanguage: string;
   onClose: () => void;
@@ -11,12 +10,11 @@ interface WordModalProps {
 }
 
 const WordModal = ({ initialData, targetLanguage, nativeLanguage, onClose, onSave }: WordModalProps) => {
-  const { i18n } = useTranslation();
   const [term, setTerm] = useState('');
   const [definition, setDefinition] = useState('');
   const [exampleSentence, setExampleSentence] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [direction, setDirection] = useState<'target-to-native'>('target-to-native');
+  const [direction, setDirection] = useState<'target-to-native' | 'native-to-target'>('target-to-native');
 
   useEffect(() => {
     if (initialData) {

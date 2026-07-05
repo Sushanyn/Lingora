@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import './Pricing.css';
 
 const Pricing = () => {
-  const { profile, loading, upgradeToPremium } = useProfile();
-  const navigate = useNavigate();
+  const { profile, loading } = useProfile();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
 
