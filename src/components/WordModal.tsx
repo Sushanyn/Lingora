@@ -30,10 +30,19 @@ const WordModal = ({ initialData, targetLanguage, nativeLanguage, onClose, onSav
     try {
       if (direction === 'target-to-native') {
         if (!term) return;
-        const { data, error } = await supabase.functions.invoke('translate', {
-          body: { text: term, sourceLang: targetLanguage, targetLang: nativeLanguage }
+        
+        const { data: sessionData } = await supabase.auth.getSession();
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(sessionData.session?.access_token ? { Authorization: `Bearer ${sessionData.session.access_token}` } : {})
+          },
+          body: JSON.stringify({ text: term, sourceLang: targetLanguage, targetLang: nativeLanguage })
         });
-        if (error) throw new Error(error.message || 'Translation failed');
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Translation failed');
         
         if (data?.translatedText) {
           setDefinition(data.translatedText);
@@ -42,10 +51,18 @@ const WordModal = ({ initialData, targetLanguage, nativeLanguage, onClose, onSav
         }
       } else {
         if (!definition) return;
-        const { data, error } = await supabase.functions.invoke('translate', {
-          body: { text: definition, sourceLang: nativeLanguage, targetLang: targetLanguage }
+        const { data: sessionData } = await supabase.auth.getSession();
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(sessionData.session?.access_token ? { Authorization: `Bearer ${sessionData.session.access_token}` } : {})
+          },
+          body: JSON.stringify({ text: definition, sourceLang: nativeLanguage, targetLang: targetLanguage })
         });
-        if (error) throw new Error(error.message || 'Translation failed');
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Translation failed');
         
         if (data?.translatedText) {
           setTerm(data.translatedText);

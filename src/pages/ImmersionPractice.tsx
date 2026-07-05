@@ -38,10 +38,18 @@ export default function ImmersionPractice() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-youtube-clips', {
-        body: { word }
+      const { data: sessionData } = await supabase.auth.getSession();
+      const res = await fetch('/api/fetch-youtube-clips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(sessionData.session?.access_token ? { Authorization: `Bearer ${sessionData.session.access_token}` } : {})
+        },
+        body: JSON.stringify({ word })
       });
-      if (error) throw error;
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch clips');
       if (data && data.clips && data.clips.length > 0) {
         setClips(data.clips);
       } else {
