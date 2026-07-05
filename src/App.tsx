@@ -47,7 +47,6 @@ function App() {
             <AppLayout />
           </ProtectedRoute>
         } 
-        errorElement={<ErrorPage />}
       >
         <Route index element={<Home />} />
         <Route path="dictionaries" element={<Dictionaries />} />

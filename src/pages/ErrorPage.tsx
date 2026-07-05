@@ -1,8 +1,7 @@
-import { useRouteError, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './ErrorPage.css';
 
 const ErrorPage = () => {
-  const error: any = useRouteError();
   const navigate = useNavigate();
 
   return (
@@ -20,12 +19,6 @@ const ErrorPage = () => {
         <p className="error-desc">
           We couldn't find the page you were looking for. It seems our mascot has taken a nap in the bamboo forest.
         </p>
-        
-        {error && (error.statusText || error.message) && (
-          <div className="error-details">
-            <i>Error details: {error.statusText || error.message}</i>
-          </div>
-        )}
 
         <button onClick={() => navigate('/')} className="btn-primary error-btn">
           Wake up & Go Home
