@@ -510,14 +510,18 @@ export default function Statistics() {
 
       const dictList = dicts ?? [];
       setTotalDicts(dictList.length);
+      const dictIds = dictList.map(d => d.id);
 
       // 2. Fetch all words
-      const { data: words } = await supabase
-        .from('words')
-        .select('id, dictionary_id, ease_factor, repetitions, created_at')
-        .eq('user_id', userId);
-
-      const wordList = words ?? [];
+      let wordList: any[] = [];
+      if (dictIds.length > 0) {
+        const { data: words } = await supabase
+          .from('words')
+          .select('id, dictionary_id, ease_factor, repetitions, created_at')
+          .in('dictionary_id', dictIds);
+        wordList = words ?? [];
+      }
+      
       setTotalWords(wordList.length);
 
       // 3. Mastery rate

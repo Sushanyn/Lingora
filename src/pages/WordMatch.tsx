@@ -143,9 +143,29 @@ export default function WordMatch() {
 
       if (isMatch) {
         // Success
-        setTiles(prev => prev.map(t => 
-          (t.id === tile.id || t.id === selectedTileId) ? { ...t, status: 'matched' } : t
-        ));
+        setTiles(prev => {
+          const newTiles = prev.map(t => 
+            (t.id === tile.id || t.id === selectedTileId) ? { ...t, status: 'matched' as const } : t
+          );
+          
+          if (newTiles.every(t => t.status === 'matched')) {
+            setTimeout(() => {
+              updateStreak();
+              
+              // Perfect Score isn't super applicable to matching (since you just click until done)
+              // But we'll grant it for clearing the board anyway to be nice
+              localStorage.setItem('lingora_perfect', 'true');
+              
+              // Flash: under 15 seconds
+              if (elapsedTime < 15000) {
+                localStorage.setItem('lingora_flash', 'true');
+              }
+              
+              setPhase('results');
+            }, 500);
+          }
+          return newTiles;
+        });
         setSelectedTileId(null);
       } else {
         // Fail

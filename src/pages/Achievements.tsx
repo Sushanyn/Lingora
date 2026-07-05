@@ -91,6 +91,16 @@ const ACHIEVEMENTS: Achievement[] = [
 
   // ── Dictionaries ──
   {
+    id: 'first-dictionary',
+    name: 'First Dictionary',
+    description: 'Create your very first dictionary',
+    emoji: '📘',
+    category: 'dictionaries',
+    check: (s) => s.totalDicts >= 1,
+    progress: (s) => Math.min(s.totalDicts / 1, 1),
+    progressLabel: (s) => `${Math.min(s.totalDicts, 1)}/1`,
+  },
+  {
     id: 'bookworm',
     name: 'Bookworm',
     description: 'Create at least 3 dictionaries',
@@ -110,6 +120,29 @@ const ACHIEVEMENTS: Achievement[] = [
     progress: (s) => Math.min(s.uniqueLanguages / 3, 1),
     progressLabel: (s) => `${Math.min(s.uniqueLanguages, 3)}/3`,
   },
+
+  // ── Practice Modes (Event-based) ──
+  {
+    id: 'the-flash',
+    name: 'The Flash',
+    description: 'Finish a practice game in under 15 seconds',
+    emoji: '🏎️',
+    category: 'special',
+    check: () => localStorage.getItem('lingora_flash') === 'true',
+    progress: () => localStorage.getItem('lingora_flash') === 'true' ? 1 : 0,
+    progressLabel: () => localStorage.getItem('lingora_flash') === 'true' ? '1/1' : '0/1',
+  },
+  {
+    id: 'perfect-score',
+    name: 'Flawless Victory',
+    description: 'Achieve 100% success in a practice game',
+    emoji: '🎯',
+    category: 'special',
+    check: () => localStorage.getItem('lingora_perfect') === 'true',
+    progress: () => localStorage.getItem('lingora_perfect') === 'true' ? 1 : 0,
+    progressLabel: () => localStorage.getItem('lingora_perfect') === 'true' ? '1/1' : '0/1',
+  },
+
 
   // ── Streaks ──
   {

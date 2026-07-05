@@ -31,6 +31,7 @@ export default function ListeningChallenge() {
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [wrongWords, setWrongWords] = useState<Word[]>([]);
+  const [startTime, setStartTime] = useState<number>(0);
   
   // Preload TTS voices
   useEffect(() => {
@@ -136,6 +137,7 @@ export default function ListeningChallenge() {
     setInputValue('');
     setShowFeedback(false);
     setIsCorrect(false);
+    setStartTime(Date.now());
     setPhase('playing');
 
     // Speak first word after a tiny delay
@@ -185,6 +187,15 @@ export default function ListeningChallenge() {
       }, 300);
     } else {
       updateStreak();
+      
+      const timeTaken = (Date.now() - startTime) / 1000;
+      if (score + (isCorrect ? 1 : 0) === words.length) {
+        localStorage.setItem('lingora_perfect', 'true');
+      }
+      if (timeTaken < 30) {
+        localStorage.setItem('lingora_flash', 'true');
+      }
+      
       setPhase('results');
     }
   };

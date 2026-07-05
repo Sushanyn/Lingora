@@ -201,6 +201,15 @@ export default function QuizMode() {
       resetInteractionState();
     } else {
       updateStreak();
+      
+      const timeTaken = (Date.now() - startTime) / 1000;
+      if (score + (isCorrect ? 1 : 0) === questions.length) {
+        localStorage.setItem('lingora_perfect', 'true');
+      }
+      if (timeTaken < 30) {
+        localStorage.setItem('lingora_flash', 'true');
+      }
+      
       setPhase('results');
     }
   };
