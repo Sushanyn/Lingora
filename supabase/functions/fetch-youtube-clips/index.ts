@@ -26,8 +26,8 @@ async function fetchTranscript(videoId: string) {
   const transcriptXml = await transcriptResponse.text();
   
   const textRegex = /<text start="([^"]+)" dur="([^"]+)".*?>([^<]+)<\/text>/g;
-  const parsed = [];
-  let m;
+  const parsed: Array<{ offset: number, duration: number, text: string }> = [];
+  let m: RegExpExecArray | null;
   while ((m = textRegex.exec(transcriptXml)) !== null) {
     parsed.push({
       offset: parseFloat(m[1]) * 1000,
@@ -78,7 +78,7 @@ serve(async (req) => {
     if (!searchRes.ok) throw new Error(`YouTube API search failed: ${await searchRes.text()}`);
     const searchData = await searchRes.json();
     
-    const newClips = [];
+    const newClips: Array<any> = [];
 
     for (const item of searchData.items) {
       const videoId = item.id.videoId;
@@ -86,7 +86,7 @@ serve(async (req) => {
         const transcript = await fetchTranscript(videoId);
         
         // Find the line containing the word
-        const matchedLines = transcript.filter(t => t.text.toLowerCase().includes(word.toLowerCase()));
+        const matchedLines = transcript.filter((t: any) => t.text.toLowerCase().includes(word.toLowerCase()));
         
         // Take the first match for simplicity
         if (matchedLines.length > 0) {
