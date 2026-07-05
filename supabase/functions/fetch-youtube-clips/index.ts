@@ -1,10 +1,41 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.14.0"
-import { YoutubeTranscript } from 'https://esm.sh/youtube-transcript';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+async function fetchTranscript(videoId: string) {
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
+  const response = await fetch(url);
+  const html = await response.text();
+  
+  // Find caption tracks JSON in the HTML page
+  const match = html.match(/"captionTracks":(\[.*?\])/);
+  if (!match) throw new Error("No captions found for this video");
+  
+  const tracks = JSON.parse(match[1]);
+  if (!tracks || tracks.length === 0) throw new Error("No caption tracks found");
+  
+  // Find english or fallback to first
+  const track = tracks.find((t: any) => t.languageCode.startsWith('en')) || tracks[0];
+  const transcriptUrl = track.baseUrl;
+  
+  const transcriptResponse = await fetch(transcriptUrl);
+  const transcriptXml = await transcriptResponse.text();
+  
+  const textRegex = /<text start="([^"]+)" dur="([^"]+)".*?>([^<]+)<\/text>/g;
+  const parsed = [];
+  let m;
+  while ((m = textRegex.exec(transcriptXml)) !== null) {
+    parsed.push({
+      offset: parseFloat(m[1]) * 1000,
+      duration: parseFloat(m[2]) * 1000,
+      text: m[3].replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    });
+  }
+  return parsed;
 }
 
 serve(async (req) => {
@@ -39,12 +70,12 @@ serve(async (req) => {
 
     // Call YouTube API to search for videos with captions
     const youtubeKey = Deno.env.get('YOUTUBE_API_KEY');
-    if (!youtubeKey) throw new Error('YouTube API key missing');
+    if (!youtubeKey) throw new Error('YouTube API key missing (set YOUTUBE_API_KEY in your Supabase secrets)');
 
     const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCaption=closedCaption&relevanceLanguage=${language}&q=${encodeURIComponent(word)}&key=${youtubeKey}&maxResults=5`;
     
     const searchRes = await fetch(searchUrl);
-    if (!searchRes.ok) throw new Error('YouTube API search failed');
+    if (!searchRes.ok) throw new Error(`YouTube API search failed: ${await searchRes.text()}`);
     const searchData = await searchRes.json();
     
     const newClips = [];
@@ -52,7 +83,7 @@ serve(async (req) => {
     for (const item of searchData.items) {
       const videoId = item.id.videoId;
       try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        const transcript = await fetchTranscript(videoId);
         
         // Find the line containing the word
         const matchedLines = transcript.filter(t => t.text.toLowerCase().includes(word.toLowerCase()));
