@@ -21,7 +21,6 @@ export default function ListeningChallenge() {
   const [selectedDict, setSelectedDict] = useState<string>('random');
   const [loadingDicts, setLoadingDicts] = useState(true);
   const [setupError, setSetupError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<string>('en-US');
 
   // Playing state
   const [words, setWords] = useState<Word[]>([]);
@@ -60,17 +59,32 @@ export default function ListeningChallenge() {
     fetchDicts();
   }, [session?.user?.id]);
 
-  const speak = (text: string) => {
+  const getWordLang = (word: Word) => {
+    const dict = dictionaries.find(d => d.id === word.dictionary_id);
+    return dict?.target_language || 'en';
+  };
+
+  const speak = (text: string, langCode: string) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
       const msg = new SpeechSynthesisUtterance(text);
-      msg.lang = language;
-      msg.rate = 0.85; // slightly slower for language learners
       
-      // Explicitly try to find a matching voice, as some browsers ignore msg.lang
+      const mapLang = (l: string) => {
+        const lower = l.toLowerCase();
+        const m: Record<string, string> = {
+          'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE',
+          'it': 'it-IT', 'ja': 'ja-JP', 'ko': 'ko-KR', 'zh': 'zh-CN',
+          'ru': 'ru-RU', 'pt': 'pt-BR', 'uk': 'uk-UA', 'cs': 'cs-CZ'
+        };
+        return m[lower] || lower;
+      };
+      
+      const fullLang = mapLang(langCode);
+      msg.lang = fullLang;
+      msg.rate = 0.85;
+      
       const voices = window.speechSynthesis.getVoices();
-      const baseLang = language.split('-')[0];
+      const baseLang = fullLang.split('-')[0];
       const targetVoice = voices.find(v => v.lang.startsWith(baseLang) || v.lang.replace('_', '-').startsWith(baseLang));
       if (targetVoice) {
         msg.voice = targetVoice;
@@ -87,23 +101,8 @@ export default function ListeningChallenge() {
     let query = supabase.from('words').select('*');
     if (selectedDict !== 'random') {
       query = query.eq('dictionary_id', selectedDict);
-      
-      const dict = dictionaries.find(d => d.id === selectedDict);
-      if (dict) {
-        const mapLang = (l: string) => {
-          const lower = l.toLowerCase();
-          const m: Record<string, string> = {
-            'en': 'en-US', 'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE',
-            'it': 'it-IT', 'ja': 'ja-JP', 'ko': 'ko-KR', 'zh': 'zh-CN',
-            'ru': 'ru-RU', 'pt': 'pt-BR', 'uk': 'uk-UA', 'cs': 'cs-CZ'
-          };
-          return m[lower] || lower; // Use code directly if not in map (e.g. 'pl' for Polish)
-        };
-        setLanguage(mapLang(dict.target_language));
-      }
     } else {
       query = query.eq('user_id', session!.user.id);
-      setLanguage('en-US'); // Default fallback for random across dictionaries
     }
     
     const { data: dbWords, error } = await query;
@@ -127,7 +126,7 @@ export default function ListeningChallenge() {
 
     // Speak first word after a tiny delay
     setTimeout(() => {
-      speak(shuffledWords[0].term);
+      speak(shuffledWords[0].term, getWordLang(shuffledWords[0]));
     }, 500);
   };
 
@@ -162,7 +161,7 @@ export default function ListeningChallenge() {
       
       // Speak next word automatically
       setTimeout(() => {
-        speak(words[nextIdx].term);
+        speak(words[nextIdx].term, getWordLang(words[nextIdx]));
       }, 300);
     } else {
       updateStreak();
@@ -231,7 +230,8 @@ export default function ListeningChallenge() {
           <div className="lc-player-area">
             <button 
               className="lc-play-btn" 
-              onClick={() => speak(currentWord.term)}
+              onClick={() => speak(currentWord.term, getWordLang(currentWord))}
+              disabled={showFeedback}
               title="Listen again"
             >
               <span className="lc-play-icon">▶️</span>
