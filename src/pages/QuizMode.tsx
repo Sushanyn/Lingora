@@ -93,7 +93,12 @@ export default function QuizMode() {
     if (selectedDict !== 'random') {
       query = query.eq('dictionary_id', selectedDict);
     } else {
-      query = query.eq('user_id', session!.user.id);
+      const dictIds = dictionaries.map(d => d.id);
+      if (dictIds.length > 0) {
+        query = query.in('dictionary_id', dictIds);
+      } else {
+        query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+      }
     }
     
     const { data: words, error } = await query;

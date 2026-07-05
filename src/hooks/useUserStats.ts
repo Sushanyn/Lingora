@@ -36,13 +36,17 @@ export function useUserStats() {
       const publicDictionaries = dicts ? dicts.filter(d => d.is_public).length : 0;
 
       // 2. Get total words
-      // We do a simple count query on words for this user
-      const { count: totalWords, error: wordError } = await supabase
-        .from('words')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id);
+      let totalWords = 0;
+      const dictIds = dicts ? dicts.map(d => d.id) : [];
+      if (dictIds.length > 0) {
+        const { count, error: wordError } = await supabase
+          .from('words')
+          .select('*', { count: 'exact', head: true })
+          .in('dictionary_id', dictIds);
 
-      if (wordError) throw wordError;
+        if (wordError) throw wordError;
+        totalWords = count || 0;
+      }
 
       setStats({
         totalDictionaries,
