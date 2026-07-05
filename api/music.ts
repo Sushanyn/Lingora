@@ -26,7 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Official YouTube Data API v3 Search
-      const ytRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(q + ' audio')}&type=video&key=${apiKey}`);
+      const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(q + ' audio')}&type=video&key=${apiKey}`;
+      const ytRes = await fetch(ytUrl, {
+        headers: {
+          'Referer': req.headers.referer || req.headers.origin || `https://${req.headers.host}`,
+          'Origin': req.headers.origin || `https://${req.headers.host}`
+        }
+      });
       const data = await ytRes.json();
 
       if (data.error) {

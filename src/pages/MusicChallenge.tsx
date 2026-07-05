@@ -175,10 +175,14 @@ export default function MusicChallenge() {
 
     try {
       const searchRes = await fetch(`/api/music?action=youtube&q=${encodeURIComponent(query)}`);
+      let searchData: any = {};
+      try {
+        searchData = await searchRes.json();
+      } catch (e) {}
+
       if (!searchRes.ok) {
-        throw new Error('Failed to fetch YouTube ID');
+        throw new Error(searchData.error || `HTTP ${searchRes.status}`);
       }
-      const searchData = await searchRes.json();
       
       if (!searchData.id) {
         throw new Error('No video ID returned');
@@ -209,15 +213,15 @@ export default function MusicChallenge() {
               setIsPlaying(false);
             }
           },
-          onError: () => {
-            alert("YouTube audio failed to load.");
+          onError: (event: any) => {
+            alert(`YouTube audio failed to load. (Error code: ${event.data})`);
             setIsLoadingAudio(false);
           }
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("К сожалению, видео не найдено или не настроен YOUTUBE_API_KEY.");
+      alert(`Ошибка поиска трека: ${error.message}\nУбедитесь, что переменная YOUTUBE_API_KEY добавлена и проект пересобран (Redeploy).`);
       setIsLoadingAudio(false);
     }
   };
