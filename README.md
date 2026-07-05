@@ -158,20 +158,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 | `npm run build` | Build for production |
 | `npm run preview` | Preview the production build locally |
 
----
-
-## 🗺️ Roadmap
-
-- [x] Core vocabulary CRUD operations
-- [x] 3D Flashcards and Quiz modes
-- [x] AI Auto-Translation Integration
-- [x] Stripe Premium Subscriptions
-- [ ] Spaced Repetition System (SRS) algorithm implementation
-- [ ] Mobile-native app wrappers (React Native / Capacitor)
-- [ ] Gamification (Streaks, Badges, Leaderboards)
-
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please open an issue first to discuss what you'd like to change, then submit a pull request.
