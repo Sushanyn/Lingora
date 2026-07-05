@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWords } from '../hooks/useWords';
 import { useDictionaries } from '../hooks/useDictionaries';
-import type { Word } from '../lib/types';
+import { calculateSM2 } from '../utils/sm2';
 import Flashcard from '../components/Flashcard';
 import QuizMode from '../components/QuizMode';
 import './Practice.css';
@@ -14,7 +14,9 @@ const Practice = () => {
   const dictId = searchParams.get('dict');
   const navigate = useNavigate();
 
-  const { words, loading, error } = useWords(dictId || '');
+  const { words, loading, error, updateWordProgress } = useWords(dictId || '');
+  
+  const dueWords = words.filter(w => !w.next_review_date || new Date(w.next_review_date) <= new Date());
   
   const [mode, setMode] = useState<PracticeMode>('selection');
   
@@ -29,7 +31,7 @@ const Practice = () => {
   const [quizTotal, setQuizTotal] = useState(0);
 
   const startFlashcards = () => {
-    const shuffled = [...words].sort(() => Math.random() - 0.5);
+    const shuffled = [...dueWords].sort(() => Math.random() - 0.5);
     setQueue(shuffled);
     setCurrentIndex(0);
     setMasteredCount(0);
@@ -41,8 +43,28 @@ const Practice = () => {
     setMode('quiz');
   };
 
-  const handleGotIt = () => {
-    setMasteredCount(prev => prev + 1);
+  const handleSR = async (quality: number) => {
+    const currentWord = queue[currentIndex];
+    if (!currentWord) return;
+
+    // Calculate new SM-2 values
+    const progress = calculateSM2(
+      quality, 
+      currentWord.repetitions || 0, 
+      currentWord.ease_factor || 2.5, 
+      currentWord.interval || 0
+    );
+
+    // Update in background
+    updateWordProgress(currentWord.id, progress);
+
+    if (quality >= 3) {
+      setMasteredCount(prev => prev + 1);
+    } else {
+      // If 'Again', add back to queue
+      setQueue(prev => [...prev, currentWord]);
+    }
+
     setIsFlipped(false);
     setTimeout(() => {
       if (currentIndex + 1 >= queue.length) {
@@ -50,14 +72,6 @@ const Practice = () => {
       } else {
         setCurrentIndex(prev => prev + 1);
       }
-    }, 150);
-  };
-
-  const handleMissedIt = () => {
-    setIsFlipped(false);
-    setTimeout(() => {
-      setQueue(prev => [...prev, currentWord]);
-      setCurrentIndex(prev => prev + 1);
     }, 150);
   };
 
@@ -145,6 +159,8 @@ const Practice = () => {
     );
   }
 
+  const dictionary = dictionaries.find(d => d.id === dictId);
+
   if (mode === 'selection') {
     const canQuiz = words.length >= 4;
     return (
@@ -159,10 +175,13 @@ const Practice = () => {
           <h1 className="selection-title">Choose your practice mode</h1>
           <div className="mode-cards">
             
-            <div className="mode-card card" onClick={startFlashcards}>
+            <div className={`mode-card card ${dueWords.length === 0 ? 'disabled' : ''}`} onClick={dueWords.length > 0 ? startFlashcards : undefined}>
               <div className="mode-icon">📇</div>
-              <h2>Classic Flashcards</h2>
-              <p>Flip cards to reveal the definition. Best for initial learning and memorization.</p>
+              <h2>Spaced Repetition</h2>
+              <p>Review your flashcards using our smart SRS algorithm to lock words into your long-term memory.</p>
+              <div className="mode-stats" style={{ marginTop: '1rem', fontWeight: 'bold', color: dueWords.length > 0 ? 'var(--primary-color)' : 'var(--text-secondary)' }}>
+                {dueWords.length > 0 ? `${dueWords.length} words due for review!` : 'All caught up! 🎉'}
+              </div>
             </div>
 
             <div className={`mode-card card ${!canQuiz ? 'disabled' : ''}`} onClick={canQuiz ? startQuiz : undefined}>
@@ -191,8 +210,8 @@ const Practice = () => {
         {mode === 'flashcards' && (
           <div className="progress-container">
             <div className="progress-stats">
-              <span>{masteredCount} Mastered</span>
-              <span>{words.length - masteredCount} Remaining</span>
+              <span>{masteredCount} Reviewed</span>
+              <span>{queue.length - currentIndex} Remaining</span>
             </div>
             <div className="progress-bar-bg">
               <div className="progress-bar-fill" style={{ width: `${progressPercentage}%` }}></div>
@@ -207,6 +226,7 @@ const Practice = () => {
             term={currentWord.term} 
             definition={currentWord.definition} 
             exampleSentence={currentWord.example_sentence}
+            targetLanguage={dictionary?.target_language || 'en'}
             isFlipped={isFlipped}
             onFlip={() => setIsFlipped(!isFlipped)}
           />
@@ -221,14 +241,18 @@ const Practice = () => {
       </div>
 
       {mode === 'flashcards' && (
-        <div className={`practice-controls ${isFlipped ? 'visible' : ''}`}>
-          <button onClick={handleMissedIt} className="control-btn missed-btn">
-            <span className="control-icon">❌</span>
-            Missed It
+        <div className={`practice-controls ${isFlipped ? 'visible' : ''}`} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+          <button onClick={() => handleSR(0)} className="control-btn missed-btn" style={{ padding: '1rem 0.5rem', fontSize: '0.9rem' }}>
+            <div>Again</div><small style={{opacity: 0.7}}>1m</small>
           </button>
-          <button onClick={handleGotIt} className="control-btn got-btn">
-            <span className="control-icon">✅</span>
-            Got It
+          <button onClick={() => handleSR(3)} className="control-btn" style={{ background: '#3b82f6', color: 'white', padding: '1rem 0.5rem', fontSize: '0.9rem' }}>
+            <div>Hard</div><small style={{opacity: 0.7}}>{currentWord?.repetitions === 0 ? '1d' : 'Wait'}</small>
+          </button>
+          <button onClick={() => handleSR(4)} className="control-btn got-btn" style={{ padding: '1rem 0.5rem', fontSize: '0.9rem' }}>
+            <div>Good</div><small style={{opacity: 0.7}}>{currentWord?.repetitions === 0 ? '1d' : currentWord?.interval ? `${currentWord.interval * 2}d` : '1d'}</small>
+          </button>
+          <button onClick={() => handleSR(5)} className="control-btn" style={{ background: '#10b981', color: 'white', padding: '1rem 0.5rem', fontSize: '0.9rem' }}>
+            <div>Easy</div><small style={{opacity: 0.7}}>{currentWord?.repetitions === 0 ? '4d' : currentWord?.interval ? `${currentWord.interval * 3}d` : '4d'}</small>
           </button>
         </div>
       )}

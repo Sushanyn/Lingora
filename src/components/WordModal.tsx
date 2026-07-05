@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import './DictionaryModal.css';
 
 interface WordModalProps {
@@ -29,26 +30,32 @@ const WordModal = ({ initialData, targetLanguage, nativeLanguage, onClose, onSav
     try {
       if (direction === 'target-to-native') {
         if (!term) return;
-        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(term)}&langpair=${targetLanguage}|${nativeLanguage}`);
-        const data = await response.json();
-        if (data?.responseData?.translatedText) {
-          setDefinition(data.responseData.translatedText);
+        const { data, error } = await supabase.functions.invoke('translate', {
+          body: { text: term, sourceLang: targetLanguage, targetLang: nativeLanguage }
+        });
+        if (error) throw new Error(error.message || 'Translation failed');
+        
+        if (data?.translatedText) {
+          setDefinition(data.translatedText);
         } else {
           alert('Could not find translation. Please try manually.');
         }
       } else {
         if (!definition) return;
-        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(definition)}&langpair=${nativeLanguage}|${targetLanguage}`);
-        const data = await response.json();
-        if (data?.responseData?.translatedText) {
-          setTerm(data.responseData.translatedText);
+        const { data, error } = await supabase.functions.invoke('translate', {
+          body: { text: definition, sourceLang: nativeLanguage, targetLang: targetLanguage }
+        });
+        if (error) throw new Error(error.message || 'Translation failed');
+        
+        if (data?.translatedText) {
+          setTerm(data.translatedText);
         } else {
           alert('Could not find translation. Please try manually.');
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Translation error occurred.');
+      alert('Translation error occurred: ' + (err.message || 'Unknown error'));
     } finally {
       setIsTranslating(false);
     }

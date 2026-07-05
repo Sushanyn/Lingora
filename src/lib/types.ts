@@ -18,5 +18,9 @@ export interface Word {
   term: string;
   definition: string;
   example_sentence?: string;
+  next_review_date: string;
+  ease_factor: number;
+  interval: number;
+  repetitions: number;
   created_at: string;
 }

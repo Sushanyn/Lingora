@@ -60,6 +60,26 @@ const DictionaryView = () => {
     setIsModalOpen(false);
   };
 
+  const exportToAnki = () => {
+    let tsv = '';
+    words.forEach(w => {
+      // Escape tabs and newlines in data just in case
+      const term = w.term.replace(/\t|\n/g, ' ');
+      const def = w.definition.replace(/\t|\n/g, ' ');
+      const ex = w.example_sentence ? w.example_sentence.replace(/\t|\n/g, ' ') : '';
+      tsv += `${term}\t${def}\t${ex}\n`;
+    });
+    const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${dictionary?.title || 'lingora'}_anki_export.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const filteredWords = words.filter(
     (w) =>
       w.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -104,6 +124,9 @@ const DictionaryView = () => {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={exportToAnki} className="btn-secondary" title="Export to Anki (TXT)">
+            Export to Anki
+          </button>
           <button onClick={() => setIsImportModalOpen(true)} className="btn-secondary">
             Import Words
           </button>

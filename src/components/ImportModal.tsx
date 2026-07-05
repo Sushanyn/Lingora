@@ -61,7 +61,8 @@ const ImportModal = ({ onClose, onImport }: ImportModalProps) => {
         <div className="import-body">
           <p className="import-instructions">
             Upload a <strong>.csv</strong> or <strong>.txt</strong> file to instantly add multiple words.
-            <br/>For TXT files, use a tab, hyphen (-), or equals (=) to separate the Term and Definition.
+            <br/><strong>Anki Export files are fully supported!</strong> Simply upload your Anki .txt file.
+            <br/>(Tabs, hyphens, and equals signs are all supported as separators).
           </p>
 
           <div 

@@ -103,6 +103,23 @@ export function useWords(dictionaryId: string) {
     }
   };
 
+  const updateWordProgress = async (id: string, updates: Pick<Word, 'next_review_date' | 'ease_factor' | 'interval' | 'repetitions'>) => {
+    try {
+      const { error } = await supabase
+        .from('words')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setWords((prev) =>
+        prev.map((w) => (w.id === id ? { ...w, ...updates } : w))
+      );
+    } catch (err: any) {
+      console.error(`Error updating progress: ${err.message}`);
+    }
+  };
+
   return {
     words,
     loading,
@@ -110,6 +127,7 @@ export function useWords(dictionaryId: string) {
     createWord,
     bulkCreateWords,
     updateWord,
+    updateWordProgress,
     deleteWord,
     refreshWords: fetchWords
   };

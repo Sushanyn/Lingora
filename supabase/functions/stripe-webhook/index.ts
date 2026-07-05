@@ -15,7 +15,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL') as string
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-console.log("Stripe Webhook function started!")
+console.log("Stripe Lifecycle Webhook function started!")
 
 serve(async (req) => {
   const signature = req.headers.get("Stripe-Signature")
@@ -24,7 +24,6 @@ serve(async (req) => {
     return new Response('No signature provided', { status: 400 })
   }
 
-  // Get the raw body for signature verification
   const body = await req.text()
   const endpointSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') as string
 
@@ -39,42 +38,82 @@ serve(async (req) => {
       undefined,
       cryptoProvider
     )
-  } catch (err) {
+  } catch (err: any) {
     console.error(`Webhook signature verification failed: ${err.message}`)
     return new Response(`Webhook Error: ${err.message}`, { status: 400 })
   }
 
-  // Handle the event
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object
+  try {
+    // Handle the full subscription lifecycle
+    switch (event.type) {
+      
+      // 1. Initial Purchase
+      case 'checkout.session.completed': {
+        const session = event.data.object as any;
+        const userId = session.client_reference_id;
+        const customerId = session.customer;
 
-    // Retrieve the user ID we passed via the payment link URL
-    const userId = session.client_reference_id
-    const customerId = session.customer
+        if (userId && customerId) {
+          console.log(`[Checkout Completed] Upgrading user ${userId}`);
+          await supabase.from('profiles').update({ 
+            is_premium: true,
+            stripe_customer_id: customerId 
+          }).eq('id', userId);
+        } else {
+          console.warn('[Checkout Completed] Missing userId or customerId');
+        }
+        break;
+      }
 
-    if (!userId) {
-      console.error("No client_reference_id found in session. Cannot link to user.")
-      return new Response("Ok, but unlinked", { status: 200 })
+      // 2. Renewal Success
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as any;
+        const customerId = invoice.customer;
+
+        if (customerId) {
+          console.log(`[Payment Succeeded] Ensuring premium for customer ${customerId}`);
+          await supabase.from('profiles').update({ 
+            is_premium: true 
+          }).eq('stripe_customer_id', customerId);
+        }
+        break;
+      }
+
+      // 3. Payment Failed (Card Expired, Insufficient Funds)
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as any;
+        const customerId = invoice.customer;
+
+        if (customerId) {
+          console.log(`[Payment Failed] Downgrading customer ${customerId}`);
+          await supabase.from('profiles').update({ 
+            is_premium: false 
+          }).eq('stripe_customer_id', customerId);
+        }
+        break;
+      }
+
+      // 4. Subscription Cancelled / Deleted
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as any;
+        const customerId = subscription.customer;
+
+        if (customerId) {
+          console.log(`[Subscription Deleted] Downgrading customer ${customerId}`);
+          await supabase.from('profiles').update({ 
+            is_premium: false 
+          }).eq('stripe_customer_id', customerId);
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
     }
-
-    console.log(`Payment successful for user ${userId}. Upgrading to premium...`)
-
-    // Update the profile in the database securely using the service role key
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        is_premium: true,
-        stripe_customer_id: customerId 
-      })
-      .eq('id', userId)
-
-    if (error) {
-      console.error(`Error updating user profile in database: ${error.message}`)
-      return new Response("Database error", { status: 500 })
-    }
-    
-    console.log(`Successfully upgraded user ${userId} to PRO!`)
+  } catch (err: any) {
+    console.error(`Error processing webhook event ${event.type}: ${err.message}`);
+    return new Response("Webhook processing error", { status: 500 });
   }
 
-  return new Response(JSON.stringify({ received: true }), { status: 200 })
+  return new Response(JSON.stringify({ received: true }), { status: 200 });
 })

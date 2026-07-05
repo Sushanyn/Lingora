@@ -43,6 +43,10 @@ CREATE TABLE public.words (
     term TEXT NOT NULL,
     definition TEXT NOT NULL,
     example_sentence TEXT,
+    next_review_date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    ease_factor REAL DEFAULT 2.5 NOT NULL,
+    interval INTEGER DEFAULT 0 NOT NULL,
+    repetitions INTEGER DEFAULT 0 NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -95,3 +99,68 @@ CREATE POLICY "Users can update own profile"
 CREATE POLICY "Users can insert own profile" 
     ON public.profiles FOR INSERT 
     WITH CHECK (auth.uid() = id);
+
+-- =================================================================================
+-- SECURITY & LIMITS (TRIGGERS)
+-- =================================================================================
+
+-- 1. Protect Premium Status from Client-Side Updates
+CREATE OR REPLACE FUNCTION protect_premium_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF auth.role() = 'authenticated' THEN
+        NEW.is_premium = OLD.is_premium;
+        NEW.stripe_customer_id = OLD.stripe_customer_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS protect_premium_trigger ON public.profiles;
+CREATE TRIGGER protect_premium_trigger
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION protect_premium_status();
+
+-- 2. Enforce Free Tier Limits (Max 3 Dictionaries)
+CREATE OR REPLACE FUNCTION check_dictionary_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+    dict_count INT;
+    is_user_premium BOOLEAN;
+BEGIN
+    SELECT is_premium INTO is_user_premium FROM public.profiles WHERE id = NEW.user_id;
+    
+    IF is_user_premium = false THEN
+        SELECT count(*) INTO dict_count FROM public.dictionaries WHERE user_id = NEW.user_id;
+        IF dict_count >= 3 THEN
+            RAISE EXCEPTION 'Free tier limit reached. Maximum 3 dictionaries allowed.';
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS enforce_dictionary_limit ON public.dictionaries;
+CREATE TRIGGER enforce_dictionary_limit
+BEFORE INSERT ON public.dictionaries
+FOR EACH ROW EXECUTE FUNCTION check_dictionary_limit();
+
+-- =================================================================================
+-- TRANSLATION CACHE
+-- =================================================================================
+
+CREATE TABLE public.translations_cache (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    source_language TEXT NOT NULL,
+    target_language TEXT NOT NULL,
+    source_text TEXT NOT NULL,
+    translated_text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE UNIQUE INDEX idx_translations_cache_lookup 
+ON public.translations_cache(source_language, target_language, lower(source_text));
+
+-- Enable RLS but let the service_role (Edge Function) bypass it
+ALTER TABLE public.translations_cache ENABLE ROW LEVEL SECURITY;
