@@ -466,6 +466,8 @@ function PlayerScreen({
   // ─── Handlers ────────────────────────────────────────────────────────
   const cleanString = (str: string) =>
     str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
       .toLowerCase()
       .trim();
@@ -479,7 +481,7 @@ function PlayerScreen({
       cleanString(currentCaption),
     );
 
-    if (similarity > 0.8) {
+    if (similarity >= 0.75) {
       setIsCorrect(true);
       setShowFeedback(true);
       setScore((prev) => prev + 1);

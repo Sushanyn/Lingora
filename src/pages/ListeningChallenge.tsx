@@ -130,7 +130,12 @@ export default function ListeningChallenge() {
     }, 500);
   };
 
-  const cleanStr = (s: string) => s.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+  const cleanStr = (s: string) => 
+    s.normalize("NFD")
+     .replace(/[\u0300-\u036f]/g, "")
+     .toLowerCase()
+     .trim()
+     .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,7 +144,8 @@ export default function ListeningChallenge() {
     const currentWord = words[currentIdx];
     const sim = stringSimilarity.compareTwoStrings(cleanStr(inputValue), cleanStr(currentWord.term));
     
-    const correct = sim >= 0.85; // stricter than fill-in-the-blank
+    // 0.75 allows for minor 1-2 letter typos
+    const correct = sim >= 0.75;
     setIsCorrect(correct);
     
     if (correct) {

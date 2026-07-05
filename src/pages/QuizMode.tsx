@@ -154,7 +154,12 @@ export default function QuizMode() {
     setIsCorrect(false);
   };
 
-  const cleanStr = (s: string) => s.toLowerCase().trim().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+  const cleanStr = (s: string) => 
+    s.normalize("NFD")
+     .replace(/[\u0300-\u036f]/g, "")
+     .toLowerCase()
+     .trim()
+     .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
 
   const handleMCQAnswer = (idx: number) => {
     if (showFeedback) return;
