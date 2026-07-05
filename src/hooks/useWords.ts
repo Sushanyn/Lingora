@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Word } from '../lib/types';
 import { useAuth } from './useAuth';
@@ -10,7 +10,10 @@ export function useWords(dictionaryId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchWords = useCallback(async () => {
-    if (!session?.user.id || !dictionaryId) return;
+    if (!session?.user.id || !dictionaryId) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -29,6 +32,10 @@ export function useWords(dictionaryId: string) {
       setLoading(false);
     }
   }, [session?.user.id, dictionaryId]);
+
+  useEffect(() => {
+    fetchWords();
+  }, [fetchWords]);
 
   const createWord = async (word: Pick<Word, 'term' | 'definition' | 'example_sentence'>) => {
     if (!session?.user.id || !dictionaryId) return;

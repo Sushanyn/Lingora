@@ -13,6 +13,7 @@ const Sidebar = () => {
   const [isDark, setIsDark] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!document.documentElement.classList.contains('dark') && !document.documentElement.classList.contains('light')) {
@@ -46,25 +47,35 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="sidebar">
-      <Link to="/" className="sidebar-header" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', width: '100%' }}>
-        <div className="sidebar-logo">🐼</div>
-        <h1 className="sidebar-title" style={{ flexGrow: 1 }}>
-          Lingora
-          {profile?.is_premium && <span className="pro-badge">PRO</span>}
-        </h1>
-        {profile && profile.current_streak > 0 && (
-          <div className="sidebar-streak" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#f59e0b', fontWeight: 'bold', fontSize: '0.9rem' }} title={`${profile.current_streak} Day Streak!`}>
-            🔥 {profile.current_streak}
-          </div>
-        )}
-      </Link>
+    <>
+      <button 
+        className="mobile-menu-toggle" 
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        aria-label="Toggle Menu"
+      >
+        {isMobileOpen ? '✖' : '☰'}
+      </button>
 
-      <nav className="sidebar-nav">
-        {navLinks.map((link) => (
+      <aside className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
+        <Link to="/" className="sidebar-header" onClick={() => setIsMobileOpen(false)} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', width: '100%' }}>
+          <div className="sidebar-logo">🐼</div>
+          <h1 className="sidebar-title" style={{ flexGrow: 1 }}>
+            Lingora
+            {profile?.is_premium && <span className="pro-badge">PRO</span>}
+          </h1>
+          {profile && profile.current_streak > 0 && (
+            <div className="sidebar-streak" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#f59e0b', fontWeight: 'bold', fontSize: '0.9rem' }} title={`${profile.current_streak} Day Streak!`}>
+              🔥 {profile.current_streak}
+            </div>
+          )}
+        </Link>
+
+        <nav className="sidebar-nav">
+          {navLinks.map((link) => (
           <NavLink
             key={link.to}
             to={link.to}
+            onClick={() => setIsMobileOpen(false)}
             className={({ isActive }) =>
               `nav-link ${isActive ? 'active' : ''}`
             }
@@ -97,6 +108,7 @@ const Sidebar = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 
