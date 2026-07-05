@@ -92,10 +92,37 @@ export default function MusicChallenge() {
     progressIntervalRef.current = window.setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
         const time = playerRef.current.getCurrentTime();
-        handleProgress(time);
+        setCurrentTime(time);
       }
     }, 100);
   };
+
+  // Sync lyrics when currentTime changes
+  useEffect(() => {
+    if (phase !== 'playing') return;
+
+    if (gameMode === 'quick' && currentTime >= 30) {
+      finishGame();
+      return;
+    }
+
+    let activeIdx = -1;
+    for (let i = 0; i < lyricsLines.length; i++) {
+      if (currentTime >= lyricsLines[i].time) {
+        activeIdx = i;
+      } else {
+        break;
+      }
+    }
+
+    if (activeIdx !== activeLineIdx && activeIdx !== -1) {
+      setActiveLineIdx(activeIdx);
+      const lineEl = lineRefs.current[activeIdx];
+      if (lineEl && viewportRef.current) {
+        lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentTime, lyricsLines, gameMode, phase, activeLineIdx]);
 
   // 1. Search iTunes
   const handleSearch = async (e?: React.FormEvent) => {
@@ -286,35 +313,7 @@ export default function MusicChallenge() {
     lineRefs.current = new Array(parsedLines.length).fill(null);
   };
 
-  // 3. Audio Progress & Sync
-  const handleProgress = (playedSeconds: number) => {
-    setCurrentTime(playedSeconds);
-
-    // If Quick 30s mode, stop at 30 seconds
-    if (gameMode === 'quick' && playedSeconds >= 30) {
-      finishGame();
-      return;
-    }
-
-    // Find active line
-    let activeIdx = -1;
-    for (let i = 0; i < lyricsLines.length; i++) {
-      if (playedSeconds >= lyricsLines[i].time) {
-        activeIdx = i;
-      } else {
-        break;
-      }
-    }
-
-    if (activeIdx !== activeLineIdx && activeIdx !== -1) {
-      setActiveLineIdx(activeIdx);
-      // Auto-scroll to active line
-      const lineEl = lineRefs.current[activeIdx];
-      if (lineEl && viewportRef.current) {
-        lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  };
+  // (handleProgress logic was moved to useEffect)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, blankObj: Blank, lineIdx: number, wordIdx: number, globalInputIdx: number) => {
     const val = e.target.value;
