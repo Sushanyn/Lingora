@@ -53,10 +53,17 @@ CREATE TABLE public.words (
 -- Enable Row Level Security (RLS) for words
 ALTER TABLE public.words ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can only view their own words
-CREATE POLICY "Users can view own words" 
+-- Policy: Users can view own words or words from public dictionaries
+CREATE POLICY "Users can view own words or public" 
     ON public.words FOR SELECT 
-    USING (auth.uid() = user_id);
+    USING (
+        auth.uid() = user_id 
+        OR 
+        EXISTS (
+            SELECT 1 FROM public.dictionaries 
+            WHERE id = words.dictionary_id AND is_public = true
+        )
+    );
 
 -- Policy: Users can insert their own words
 CREATE POLICY "Users can insert own words" 
@@ -79,6 +86,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     is_premium BOOLEAN DEFAULT false NOT NULL,
     stripe_customer_id TEXT,
+    current_streak INTEGER DEFAULT 0 NOT NULL,
+    longest_streak INTEGER DEFAULT 0 NOT NULL,
+    last_practice_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -164,3 +174,64 @@ ON public.translations_cache(source_language, target_language, lower(source_text
 
 -- Enable RLS but let the service_role (Edge Function) bypass it
 ALTER TABLE public.translations_cache ENABLE ROW LEVEL SECURITY;
+
+-- =================================================================================
+-- RATE LIMITING
+-- =================================================================================
+
+CREATE TABLE public.translation_rate_limits (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    request_count INTEGER DEFAULT 1 NOT NULL,
+    window_start TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.translation_rate_limits ENABLE ROW LEVEL SECURITY;
+
+-- =================================================================================
+-- IMMERSION & DICTATION
+-- =================================================================================
+
+CREATE TABLE public.immersion_clips (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    target_word TEXT NOT NULL,
+    video_id TEXT NOT NULL,
+    start_time REAL NOT NULL,
+    end_time REAL NOT NULL,
+    exact_transcript TEXT NOT NULL,
+    language TEXT DEFAULT 'en' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX idx_immersion_clips_word ON public.immersion_clips(lower(target_word));
+
+ALTER TABLE public.immersion_clips ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can view clips" ON public.immersion_clips FOR SELECT USING (true);
+-- Service role bypasses RLS for inserting clips
+
+CREATE TABLE public.immersion_progress (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    clip_id UUID NOT NULL REFERENCES public.immersion_clips(id) ON DELETE CASCADE,
+    is_mastered BOOLEAN DEFAULT false NOT NULL,
+    attempts INTEGER DEFAULT 0 NOT NULL,
+    last_played_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(user_id, clip_id)
+);
+
+ALTER TABLE public.immersion_progress ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own progress" ON public.immersion_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own progress" ON public.immersion_progress FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own progress" ON public.immersion_progress FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE TABLE public.immersion_favorites (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    clip_id UUID NOT NULL REFERENCES public.immersion_clips(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(user_id, clip_id)
+);
+
+ALTER TABLE public.immersion_favorites ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own favorites" ON public.immersion_favorites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own favorites" ON public.immersion_favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own favorites" ON public.immersion_favorites FOR DELETE USING (auth.uid() = user_id);

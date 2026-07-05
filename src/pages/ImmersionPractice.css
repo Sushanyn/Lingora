@@ -1,0 +1,91 @@
+.immersion-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.video-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  background: #000;
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  justify-content: center;
+}
+
+.youtube-player {
+  pointer-events: none; /* Prevent user from pausing/clicking */
+}
+
+.dictation-area {
+  width: 100%;
+  max-width: 640px;
+  padding: 2rem;
+}
+
+.dictation-input {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+}
+
+.dictation-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.feedback-box {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  animation: slideUp 0.3s ease;
+}
+
+.feedback-box.correct {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.feedback-box.incorrect {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.actual-transcript {
+  font-size: 1.25rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 6px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.next-btn {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.immersion-loading, .immersion-error, .immersion-empty {
+  text-align: center;
+  margin-top: 4rem;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

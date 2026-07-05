@@ -1,12 +1,29 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useUserStats } from '../hooks/useUserStats';
+import { useProfile } from '../hooks/useProfile';
 import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const { stats, loading } = useUserStats();
+  const { profile } = useProfile();
+  const [dueWordsCount, setDueWordsCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const fetchDueWords = async () => {
+      const { count } = await supabase
+        .from('words')
+        .select('*', { count: 'exact', head: true })
+        .lte('next_review_date', new Date().toISOString());
+      setDueWordsCount(count || 0);
+    };
+    fetchDueWords();
+  }, [session]);
 
   const userEmail = session?.user?.email || 'Language Learner';
 
@@ -26,8 +43,27 @@ const Home = () => {
             </button>
           </div>
         </div>
-        <div className="welcome-mascot">🐼</div>
+        <div className="welcome-mascot" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: '4rem' }}>🐼</div>
+          {profile && profile.current_streak > 0 && (
+            <div style={{ marginTop: '0.5rem', background: '#fef3c7', color: '#d97706', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.875rem' }}>
+              🔥 {profile.current_streak} Day Streak!
+            </div>
+          )}
+        </div>
       </div>
+
+      {dueWordsCount !== null && dueWordsCount > 0 && (
+        <div className="review-banner card" style={{ background: 'linear-gradient(135deg, var(--primary-color), #2563eb)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', marginBottom: '2rem' }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Time to review!</h3>
+            <p style={{ margin: '0.25rem 0 0 0', opacity: 0.9 }}>You have <strong>{dueWordsCount} words</strong> waiting to be reviewed across your dictionaries.</p>
+          </div>
+          <button onClick={() => navigate('/dictionaries')} style={{ background: 'white', color: 'var(--primary-color)', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            Start Reviewing
+          </button>
+        </div>
+      )}
 
       <div className="dashboard-stats">
         <h3>Your Progress at a Glance</h3>

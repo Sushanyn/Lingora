@@ -9,6 +9,20 @@ const LoginForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during Google authentication.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -16,11 +30,15 @@ const LoginForm = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+
+        if (data.user?.identities?.length === 0) {
+          throw new Error('An account with this email already exists, please try logging in');
+        }
         
         // Flag to redirect them to the pricing page immediately upon login
         localStorage.setItem('isNewUser', 'true');
@@ -47,6 +65,15 @@ const LoginForm = () => {
       <h2 className="login-title">{isSignUp ? 'Create an Account' : 'Welcome Back!'}</h2>
       {error && <div className="login-error">{error}</div>}
       
+      <button type="button" onClick={handleGoogleLogin} className="btn-secondary google-btn" style={{ width: '100%', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}>
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
+        Continue with Google
+      </button>
+      
+      <div className="divider" style={{ textAlign: 'center', margin: '1rem 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+        <span>OR</span>
+      </div>
+
       <form onSubmit={handleSubmit} className="login-form">
         <div className="form-group">
           <label>Email</label>

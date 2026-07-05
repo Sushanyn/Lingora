@@ -6,6 +6,9 @@ export interface UserProfile {
   id: string;
   is_premium: boolean;
   stripe_customer_id?: string;
+  current_streak: number;
+  longest_streak: number;
+  last_practice_date?: string;
   created_at: string;
 }
 
@@ -54,28 +57,52 @@ export function useProfile() {
     fetchOrCreateProfile();
   }, [session]);
 
-  const upgradeToPremium = async () => {
-    if (!session?.user.id) return false;
+  const updateStreak = async () => {
+    if (!profile) return;
     
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ is_premium: true })
-        .eq('id', session.user.id)
-        .select()
-        .single();
+    const today = new Date().toISOString().split('T')[0];
+    const lastPractice = profile.last_practice_date;
+    
+    if (lastPractice === today) return;
+    
+    let newCurrentStreak = profile.current_streak || 0;
+    
+    if (!lastPractice) {
+      newCurrentStreak = 1;
+    } else {
+      const lastDate = new Date(lastPractice);
+      const todayDate = new Date(today);
+      const diffTime = Math.abs(todayDate.getTime() - lastDate.getTime());
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays === 1) {
+        newCurrentStreak += 1;
+      } else {
+        newCurrentStreak = 1;
+      }
+    }
+    
+    const newLongestStreak = Math.max(profile.longest_streak || 0, newCurrentStreak);
+    
+    const updates = {
+      current_streak: newCurrentStreak,
+      longest_streak: newLongestStreak,
+      last_practice_date: today
+    };
 
-      if (error) throw error;
-      if (data) {
-        setProfile(data as UserProfile);
-        return true;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', profile.id);
+
+      if (!error) {
+        setProfile({ ...profile, ...updates });
       }
     } catch (err) {
-      console.error('Error upgrading to premium:', err);
-      return false;
+      console.error('Error updating streak:', err);
     }
-    return false;
   };
 
-  return { profile, loading, upgradeToPremium };
+  return { profile, loading, updateStreak };
 }

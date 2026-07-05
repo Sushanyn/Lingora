@@ -1,10 +1,12 @@
 import { useUserStats } from '../hooks/useUserStats';
 import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import './Profile.css';
 
 const Profile = () => {
   const { session, signOut } = useAuth();
   const { stats, loading, error } = useUserStats();
+  const { profile } = useProfile();
 
   // Create a fun avatar based on the user's email first letter
   const userEmail = session?.user?.email || 'Student';
@@ -17,7 +19,9 @@ const Profile = () => {
         <div className="profile-info">
           <h1 className="profile-name">Language Learner</h1>
           <p className="profile-email">{userEmail}</p>
-          <span className="profile-badge">Free Plan</span>
+          <span className={`profile-badge ${profile?.is_premium ? 'pro-badge' : ''}`}>
+            {profile?.is_premium ? 'Pro Plan' : 'Free Plan'}
+          </span>
         </div>
         <button onClick={signOut} className="btn-secondary sign-out-btn-desktop">
           Sign Out

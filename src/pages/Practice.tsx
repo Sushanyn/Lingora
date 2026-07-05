@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useWords } from '../hooks/useWords';
 import { useDictionaries } from '../hooks/useDictionaries';
+import { useProfile } from '../hooks/useProfile';
 import type { Word } from '../lib/types';
 import { calculateSM2 } from '../utils/sm2';
 import Flashcard from '../components/Flashcard';
@@ -16,6 +17,7 @@ const Practice = () => {
   const navigate = useNavigate();
 
   const { words, loading, error, updateWordProgress } = useWords(dictId || '');
+  const { updateStreak } = useProfile();
   
   const dueWords = words.filter(w => !w.next_review_date || new Date(w.next_review_date) <= new Date());
   
@@ -69,6 +71,7 @@ const Practice = () => {
     setIsFlipped(false);
     setTimeout(() => {
       if (currentIndex + 1 >= queue.length) {
+        updateStreak();
         setMode('finished');
       } else {
         setCurrentIndex(prev => prev + 1);
@@ -79,6 +82,7 @@ const Practice = () => {
   const handleQuizFinish = (score: number, total: number) => {
     setQuizScore(score);
     setQuizTotal(total);
+    updateStreak();
     setMode('finished');
   };
 

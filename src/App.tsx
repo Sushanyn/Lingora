@@ -3,6 +3,7 @@ import AppLayout from './layouts/AppLayout';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Practice from './pages/Practice';
+import ImmersionPractice from './pages/ImmersionPractice';
 import Dictionaries from './pages/Dictionaries';
 import DictionaryView from './pages/DictionaryView';
 import Library from './pages/Library';
@@ -46,6 +47,7 @@ function App() {
         <Route path="dictionaries" element={<Dictionaries />} />
         <Route path="dictionaries/:id" element={<DictionaryView />} />
         <Route path="practice" element={<Practice />} />
+        <Route path="immersion" element={<ImmersionPractice />} />
         <Route path="library" element={<Library />} />
         <Route path="profile" element={<Profile />} />
         <Route path="pricing" element={<Pricing />} />

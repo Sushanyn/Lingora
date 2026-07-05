@@ -18,15 +18,15 @@ export function useDictionaries() {
       // Fetch dictionaries
       const { data, error } = await supabase
         .from('dictionaries')
-        .select('*')
+        .select('*, words(count)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // We will set wordCount to 0 for now until we join the words table
-      const dictsWithCounts = (data || []).map((dict) => ({
+      // Extract the count from the joined words array
+      const dictsWithCounts = (data || []).map((dict: any) => ({
         ...dict,
-        wordCount: 0 
+        wordCount: dict.words?.[0]?.count || 0 
       }));
       
       setDictionaries(dictsWithCounts);

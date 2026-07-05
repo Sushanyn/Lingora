@@ -24,6 +24,42 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Missing Authorization header')
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (authError || !user) throw new Error('Unauthorized')
+
+    // --- Rate Limit Logic ---
+    const { data: rateLimit } = await supabase
+      .from('translation_rate_limits')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    const now = new Date()
+    const oneMinuteAgo = new Date(now.getTime() - 60000)
+
+    if (rateLimit) {
+      if (new Date(rateLimit.window_start) > oneMinuteAgo) {
+        if (rateLimit.request_count >= 20) {
+          throw new Error('Rate limit exceeded (Max 20 translations per minute)')
+        } else {
+          await supabase.from('translation_rate_limits')
+            .update({ request_count: rateLimit.request_count + 1 })
+            .eq('user_id', user.id)
+        }
+      } else {
+        await supabase.from('translation_rate_limits')
+          .update({ request_count: 1, window_start: now.toISOString() })
+          .eq('user_id', user.id)
+      }
+    } else {
+      await supabase.from('translation_rate_limits')
+        .insert({ user_id: user.id, request_count: 1, window_start: now.toISOString() })
+    }
+
     // 1. Check Global Cache
     const { data: cached } = await supabase
       .from('translations_cache')

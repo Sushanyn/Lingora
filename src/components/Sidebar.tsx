@@ -39,6 +39,7 @@ const Sidebar = () => {
   const navLinks = [
     { to: '/dictionaries', label: t('sidebar.dictionaries'), icon: '📚' },
     { to: '/practice', label: t('sidebar.practice'), icon: '🎯' },
+    { to: '/immersion', label: 'Immersion', icon: '🍿' },
     { to: '/library', label: t('sidebar.library'), icon: '🌍' },
     { to: '/profile', label: t('sidebar.profile'), icon: '👤' },
     { to: '/pricing', label: 'Premium', icon: '⭐' },
@@ -46,12 +47,17 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <Link to="/" className="sidebar-header" style={{ textDecoration: 'none' }}>
+      <Link to="/" className="sidebar-header" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', width: '100%' }}>
         <div className="sidebar-logo">🐼</div>
-        <h1 className="sidebar-title">
+        <h1 className="sidebar-title" style={{ flexGrow: 1 }}>
           Lingora
           {profile?.is_premium && <span className="pro-badge">PRO</span>}
         </h1>
+        {profile && profile.current_streak > 0 && (
+          <div className="sidebar-streak" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#f59e0b', fontWeight: 'bold', fontSize: '0.9rem' }} title={`${profile.current_streak} Day Streak!`}>
+            🔥 {profile.current_streak}
+          </div>
+        )}
       </Link>
 
       <nav className="sidebar-nav">
