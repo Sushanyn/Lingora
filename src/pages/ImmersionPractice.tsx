@@ -81,9 +81,14 @@ export default function ImmersionPractice() {
 
   const onCaptionConsumed = (event: any) => {
     // event object contains the text being spoken
-    // Note: YouGlish fires this frequently. We keep the last sentence chunk.
     if (event && event.text) {
        setCurrentCaption(event.text);
+       // Pause the video shortly after the phrase so it doesn't keep playing infinitely
+       setTimeout(() => {
+         if (widgetRef.current) {
+           widgetRef.current.pause();
+         }
+       }, 1000); // 1 second buffer to let the sentence finish naturally
     }
   };
 
@@ -119,6 +124,12 @@ export default function ImmersionPractice() {
     setIsCorrect(false);
     if (widgetRef.current) {
       widgetRef.current.next();
+    }
+  };
+
+  const handleReplay = () => {
+    if (widgetRef.current) {
+      widgetRef.current.replay();
     }
   };
 
@@ -163,6 +174,11 @@ export default function ImmersionPractice() {
             rows={2}
           />
           
+          <div className="simple-controls">
+             <button onClick={handleReplay} className="btn-secondary">🔁 Replay</button>
+             <button onClick={handleNext} className="btn-primary">Next Video ➔</button>
+          </div>
+
           {showFeedback && !isCorrect && (
             <div className="feedback-hint-simple">
               <p><strong>Hint:</strong> "{currentCaption}"</p>
