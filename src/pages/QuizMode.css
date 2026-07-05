@@ -101,7 +101,7 @@ html.dark .quiz-card {
   border: none;
   border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  color: white;
+  color: #000;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -253,7 +253,7 @@ html.dark .quiz-card {
   border-radius: var(--radius-sm);
   border: none;
   background: var(--primary);
-  color: white;
+  color: #000;
   cursor: pointer;
 }
 .fb-input.correct { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
@@ -349,7 +349,7 @@ html.dark .quiz-card {
   cursor: pointer;
   transition: transform 0.2s;
 }
-.res-btn-primary { background: var(--primary); color: white; border: none; }
+.res-btn-primary { background: var(--primary); color: #000; border: none; }
 .res-btn-secondary { background: transparent; color: var(--text-primary); border: 2px solid var(--border-color); }
 .res-btn-primary:hover, .res-btn-secondary:hover { transform: translateY(-2px); }
 

@@ -85,10 +85,14 @@ export default function QuizMode() {
     }
     
     setSetupError(null);
-    const { data: words, error } = await supabase
-      .from('words')
-      .select('*')
-      .eq('dictionary_id', selectedDict);
+    let query = supabase.from('words').select('*');
+    if (selectedDict !== 'random') {
+      query = query.eq('dictionary_id', selectedDict);
+    } else {
+      query = query.eq('user_id', session!.user.id);
+    }
+    
+    const { data: words, error } = await query;
       
     if (error || !words || words.length < 4) {
       setSetupError('Not enough words in this dictionary to generate a quiz (minimum 4 required).');
@@ -226,6 +230,7 @@ export default function QuizMode() {
                   onChange={(e) => setSelectedDict(e.target.value)}
                 >
                   <option value="" disabled>-- Choose a dictionary --</option>
+                  <option value="random">🎲 All My Words (Random)</option>
                   {dictionaries.map(d => (
                     <option key={d.id} value={d.id}>{d.title}</option>
                   ))}

@@ -105,18 +105,25 @@ function SetupScreen({
     if (!selectedDict) return;
     (async () => {
       setLoadingWords(true);
-      const { data } = await supabase
-        .from('words')
-        .select('id, term, definition')
-        .eq('dictionary_id', selectedDict);
+      
+      let query = supabase.from('words').select('id, term, definition');
+      if (selectedDict === 'random') {
+        query = query.eq('user_id', session!.user.id);
+      } else {
+        query = query.eq('dictionary_id', selectedDict);
+      }
+      
+      const { data } = await query;
       setDictWords(data || []);
       setSelectedWordIds(new Set());
       setLoadingWords(false);
 
       // Auto-detect language from dictionary
-      const dict = dictionaries.find((d) => d.id === selectedDict);
-      if (dict) {
-        setLanguage(mapDictLangToYouglish(dict.target_language));
+      if (selectedDict !== 'random') {
+        const dict = dictionaries.find((d) => d.id === selectedDict);
+        if (dict) {
+          setLanguage(mapDictLangToYouglish(dict.target_language));
+        }
       }
     })();
   }, [selectedDict, dictionaries]);
@@ -230,7 +237,8 @@ function SetupScreen({
                 value={selectedDict || ''}
                 onChange={(e) => setSelectedDict(e.target.value || null)}
               >
-                <option value="">— Select a dictionary —</option>
+                <option value="" disabled>— Select a dictionary —</option>
+                <option value="random">🎲 All My Words (Random)</option>
                 {dictionaries.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.title}

@@ -107,13 +107,13 @@
 
 .ach-filter-btn--active {
   background: var(--primary);
-  color: #fff;
+  color: #000;
   border-color: var(--primary);
 }
 
 .ach-filter-btn--active:hover {
   background: var(--primary);
-  color: #fff;
+  color: #000;
   opacity: 0.9;
 }
 
@@ -437,7 +437,7 @@
 
 .ach-error__retry {
   background: var(--primary);
-  color: #fff;
+  color: #000;
   border: none;
   border-radius: var(--radius-sm);
   padding: 0.55rem 1.5rem;
