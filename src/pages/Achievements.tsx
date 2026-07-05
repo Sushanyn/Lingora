@@ -321,16 +321,19 @@ export default function Achievements() {
 
         if (dictsErr) throw dictsErr;
 
-        // Fetch words
-        const { data: words, error: wordsErr } = await supabase
-          .from('words')
-          .select('id, created_at, repetitions')
-          .eq('user_id', userId);
-
-        if (wordsErr) throw wordsErr;
-
         const safeDicts = dicts ?? [];
-        const safeWords = words ?? [];
+        const dictIds = safeDicts.map(d => d.id);
+        
+        let safeWords: any[] = [];
+        if (dictIds.length > 0) {
+          const { data: words, error: wordsErr } = await supabase
+            .from('words')
+            .select('id, created_at, repetitions')
+            .in('dictionary_id', dictIds);
+
+          if (wordsErr) throw wordsErr;
+          safeWords = words ?? [];
+        }
 
         const uniqueLangs = new Set(
           safeDicts.map((d) => d.target_language?.toLowerCase().trim())
