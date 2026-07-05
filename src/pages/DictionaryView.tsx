@@ -4,6 +4,7 @@ import { useWords } from '../hooks/useWords';
 import type { Word } from '../lib/types';
 import WordModal from '../components/WordModal';
 import ImportModal from '../components/ImportModal';
+import PandaSuggestModal from '../components/PandaSuggestModal';
 import './DictionaryView.css';
 import { supabase } from '../lib/supabase';
 import type { Dictionary } from '../lib/types';
@@ -17,6 +18,7 @@ const DictionaryView = () => {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isPandaModalOpen, setIsPandaModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -130,9 +132,12 @@ const DictionaryView = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button onClick={() => setIsPandaModalOpen(true)} className="btn-secondary" style={{ backgroundColor: '#e2e8f0', color: '#0f172a' }}>
+            🐼 Ask Panda
+          </button>
           <button onClick={exportToAnki} className="btn-secondary" title="Export to Anki (TXT)">
-            Export to Anki
+            Export Anki
           </button>
           <button onClick={() => setIsImportModalOpen(true)} className="btn-secondary">
             Import Words
@@ -149,7 +154,10 @@ const DictionaryView = () => {
             <div className="empty-mascot">🐼</div>
             <p>{searchQuery ? 'No words match your search.' : 'This dictionary is empty.'}</p>
             {!searchQuery && (
-              <button onClick={handleOpenCreate} className="btn-primary">Add your first word</button>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button onClick={() => setIsPandaModalOpen(true)} className="btn-secondary">🐼 Ask Panda for Words</button>
+                <button onClick={handleOpenCreate} className="btn-primary">Add your first word</button>
+              </div>
             )}
           </div>
         ) : (
@@ -194,6 +202,17 @@ const DictionaryView = () => {
           onClose={() => setIsImportModalOpen(false)}
           onImport={async (parsedWords) => {
             await bulkCreateWords(parsedWords);
+          }}
+        />
+      )}
+
+      {isPandaModalOpen && (
+        <PandaSuggestModal 
+          targetLanguage={dictionary.target_language}
+          nativeLanguage={dictionary.native_language}
+          onClose={() => setIsPandaModalOpen(false)}
+          onImport={async (newWords) => {
+            await bulkCreateWords(newWords);
           }}
         />
       )}

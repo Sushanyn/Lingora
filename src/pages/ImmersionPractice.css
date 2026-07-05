@@ -8,25 +8,46 @@
   align-items: center;
 }
 
-.video-wrapper {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  background: #000;
-  width: 100%;
-  max-width: 640px;
+.immersion-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.immersion-header h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.immersion-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.highlight-word {
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+.immersion-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 900px) {
+  .immersion-layout {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.video-section {
+  padding: 1rem;
   display: flex;
-  justify-content: center;
-}
-
-.youtube-player {
-  pointer-events: none; /* Prevent user from pausing/clicking */
-}
-
-.dictation-area {
-  width: 100%;
-  max-width: 640px;
-  padding: 2rem;
+  flex-direction: column;
+  align-items: center;
 }
 
 .video-wrapper {
@@ -34,13 +55,12 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 640px;
-  background-color: var(--surface-light);
-  border-radius: var(--radius-lg);
+  aspect-ratio: 16/9;
+  background-color: var(--background-color);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
-  margin-bottom: 1.5rem;
-  min-height: 390px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
 }
 
 .youglish-container {
@@ -48,80 +68,154 @@
   height: 100%;
 }
 
-.track-count {
-  font-weight: 500;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
+.video-controls {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  justify-content: center;
 }
 
-.dictation-hint {
-  font-size: 0.9rem;
-  color: var(--text-muted);
+.video-controls button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 200px;
+}
+
+.dictation-section {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
-  padding: 0.5rem;
-  background-color: rgba(var(--primary-rgb), 0.1);
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--primary-light);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.dictation-input {
+.challenge-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.badge-optional {
+  background-color: var(--surface-light);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dictation-instructions {
+  background-color: rgba(var(--primary-rgb), 0.05);
+  border-left: 3px solid var(--primary);
+  padding: 0.75rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.dictation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-grow: 1;
+}
+
+.dictation-textarea {
   width: 100%;
   padding: 1rem;
-  font-size: 1.25rem;
   border: 2px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-color);
-  color: var(--text-color);
-  margin-bottom: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-family: inherit;
   transition: all 0.2s;
+  resize: vertical;
+  background-color: var(--background-color);
+  color: var(--text-primary);
 }
 
-.dictation-input:focus {
-  border-color: var(--primary-color);
+.dictation-textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+.dictation-textarea:disabled {
+  background-color: var(--surface-light);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.check-btn {
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-radius: var(--radius-md);
 }
 
 .feedback-box {
   margin-top: 1.5rem;
   padding: 1.5rem;
-  border-radius: 8px;
-  animation: slideUp 0.3s ease;
+  border-radius: var(--radius-md);
+  animation: slideUp 0.3s ease-out;
 }
 
 .feedback-box.correct {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .feedback-box.incorrect {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.feedback-box h3 {
+  margin: 0 0 1rem 0;
+}
+
+.feedback-box.correct h3 {
+  color: #059669;
+}
+
+.feedback-box.incorrect h3 {
+  color: #d97706;
+}
+
+.transcript-comparison {
+  background-color: var(--surface);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
 }
 
 .actual-transcript {
-  font-size: 1.25rem;
-  margin: 1rem 0;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-radius: 6px;
-  border-left: 4px solid var(--primary-color);
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .next-btn {
   width: 100%;
-  margin-top: 1rem;
-}
-
-.immersion-loading, .immersion-error, .immersion-empty {
-  text-align: center;
-  margin-top: 4rem;
-  font-size: 1.2rem;
-  color: var(--text-secondary);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

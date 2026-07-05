@@ -24,7 +24,7 @@ export default function ImmersionPractice() {
   const [isCorrect, setIsCorrect] = useState(false);
   
   const widgetRef = useRef<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -39,6 +39,7 @@ export default function ImmersionPractice() {
           'onCaptionConsumed': onCaptionConsumed
         }
       });
+      // The word to search for
       widgetRef.current.fetch(word, "english");
     };
 
@@ -127,55 +128,77 @@ export default function ImmersionPractice() {
 
   return (
     <div className="immersion-container">
-      <h2>Listen and practice!</h2>
-      <p>Target word: <strong>{word}</strong> {totalTracks > 0 && <span className="track-count">({totalTracks} tracks found)</span>}</p>
-
-      <div className="video-wrapper">
-        <div id="youglish-widget" className="youglish-container">
-          {loading && <div className="immersion-loading">Loading YouGlish... 🍿</div>}
-        </div>
+      <div className="immersion-header">
+        <h2>🎬 Immersion Mode</h2>
+        <p className="immersion-subtitle">
+          Watch real movie clips containing the word: <strong className="highlight-word">{word}</strong>
+          {totalTracks > 0 && <span className="track-count">({totalTracks} tracks found)</span>}
+        </p>
       </div>
 
-      {!loading && (
-        <>
-          <div className="controls">
-            <button onClick={handleReplay} className="btn-secondary replay-btn">🔁 Replay Clip</button>
+      <div className="immersion-layout">
+        {/* Left Side: Video Player */}
+        <div className="video-section card">
+          <div className="video-wrapper">
+            <div id="youglish-widget" className="youglish-container">
+              {loading && <div className="immersion-loading">Loading videos... 🍿</div>}
+            </div>
           </div>
+          
+          {!loading && (
+            <div className="video-controls">
+              <button onClick={handleReplay} className="btn-secondary replay-btn">
+                <span className="icon">🔁</span> Replay Clip
+              </button>
+              <button onClick={handleNext} className="btn-secondary next-vid-btn">
+                <span className="icon">⏭️</span> Skip to Next Video
+              </button>
+            </div>
+          )}
+        </div>
 
-          <div className="dictation-area card">
-            <p className="dictation-hint">
-              <strong>Challenge:</strong> Try not to look at the subtitles! Close your eyes, listen closely, and type what you hear to test your dictation skills.
-            </p>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input 
-                type="text" 
+        {/* Right Side: Dictation Challenge */}
+        {!loading && (
+          <div className="dictation-section card">
+            <div className="challenge-header">
+              <h3>✍️ Dictation Challenge</h3>
+              <span className="badge-optional">Optional</span>
+            </div>
+            
+            <div className="dictation-instructions">
+              <p>Close your eyes, listen to the clip, and type exactly what you hear!</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="dictation-form">
+              <textarea 
                 ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type the sentence you just heard..."
+                placeholder="Type the sentence here..."
                 disabled={showFeedback}
-                className="dictation-input"
+                className="dictation-textarea"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck="false"
+                rows={3}
               />
-              {!showFeedback && <button type="submit" className="btn-primary">Check</button>}
+              {!showFeedback && <button type="submit" className="btn-primary check-btn">Check My Answer</button>}
             </form>
 
             {showFeedback && (
               <div className={`feedback-box ${isCorrect ? 'correct' : 'incorrect'}`}>
-                <h3>{isCorrect ? 'Excellent! 🎉' : 'Keep practicing!'}</h3>
+                <h3>{isCorrect ? '✨ Perfect Match!' : '💪 Keep practicing!'}</h3>
                 <div className="transcript-comparison">
-                  <p className="actual-transcript"><strong>Captured Transcript:</strong> {currentCaption}</p>
+                  <p className="actual-transcript"><strong>They said:</strong> "{currentCaption}"</p>
                 </div>
                 <button onClick={handleNext} className="btn-primary next-btn">
-                  Next Clip ➔
+                  Play Next Clip ➔
                 </button>
               </div>
             )}
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
