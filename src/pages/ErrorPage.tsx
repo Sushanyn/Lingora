@@ -11,7 +11,10 @@ const ErrorPage = () => {
           <div className="bamboo-stick b1"></div>
           <div className="bamboo-stick b2"></div>
           <div className="bamboo-stick b3"></div>
-          <div className="panda-sleeping">🐼💤</div>
+          <div className="panda-sleeping">🐼</div>
+          <div className="z-mark z1">Z</div>
+          <div className="z-mark z2">z</div>
+          <div className="z-mark z3">z</div>
         </div>
         
         <h1 className="error-code">404</h1>

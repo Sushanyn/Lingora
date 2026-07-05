@@ -69,6 +69,27 @@
   100% { transform: rotate(-10deg) scale(1); }
 }
 
+.z-mark {
+  position: absolute;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  opacity: 0;
+  animation: floatZ 3s ease-in-out infinite;
+  z-index: 11;
+}
+
+.z1 { font-size: 2rem; bottom: 120px; left: 160px; animation-delay: 0s; }
+.z2 { font-size: 1.5rem; bottom: 150px; left: 190px; animation-delay: 1s; }
+.z3 { font-size: 1.2rem; bottom: 170px; left: 220px; animation-delay: 2s; }
+
+@keyframes floatZ {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(20px, -40px) scale(1.5); opacity: 0; }
+}
+
 .error-code {
   font-size: 8rem;
   font-weight: 900;
