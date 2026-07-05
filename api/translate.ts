@@ -45,54 +45,62 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    // --- Rate Limit Logic ---
-    const { data: rateLimit } = await supabase
-      .from('translation_rate_limits')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+    // --- Rate Limit Logic (Fail graceful if RLS blocks it due to missing Service Key) ---
+    try {
+      const { data: rateLimit } = await supabase
+        .from('translation_rate_limits')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-    const now = new Date();
-    const oneMinuteAgo = new Date(now.getTime() - 60000);
+      const now = new Date();
+      const oneMinuteAgo = new Date(now.getTime() - 60000);
 
-    if (rateLimit) {
-      if (new Date(rateLimit.window_start) > oneMinuteAgo) {
-        if (rateLimit.request_count >= 20) {
-          res.status(429).json({ error: 'Rate limit exceeded (Max 20 translations per minute)' });
-          return;
+      if (rateLimit) {
+        if (new Date(rateLimit.window_start) > oneMinuteAgo) {
+          if (rateLimit.request_count >= 20) {
+            res.status(429).json({ error: 'Rate limit exceeded (Max 20 translations per minute)' });
+            return;
+          } else {
+            await supabase.from('translation_rate_limits')
+              .update({ request_count: rateLimit.request_count + 1 })
+              .eq('user_id', user.id);
+          }
         } else {
           await supabase.from('translation_rate_limits')
-            .update({ request_count: rateLimit.request_count + 1 })
+            .update({ request_count: 1, window_start: now.toISOString() })
             .eq('user_id', user.id);
         }
       } else {
         await supabase.from('translation_rate_limits')
-          .update({ request_count: 1, window_start: now.toISOString() })
-          .eq('user_id', user.id);
+          .insert({ user_id: user.id, request_count: 1, window_start: now.toISOString() });
       }
-    } else {
-      await supabase.from('translation_rate_limits')
-        .insert({ user_id: user.id, request_count: 1, window_start: now.toISOString() });
+    } catch (e) {
+      console.warn("Rate limit DB check failed, continuing anyway:", e);
     }
 
     // 1. Check Global Cache
-    const { data: cached } = await supabase
-      .from('translations_cache')
-      .select('translated_text')
-      .eq('source_language', sourceLang)
-      .eq('target_language', targetLang)
-      .eq('source_text', text.toLowerCase())
-      .single();
+    try {
+      const { data: cached } = await supabase
+        .from('translations_cache')
+        .select('translated_text')
+        .eq('source_language', sourceLang)
+        .eq('target_language', targetLang)
+        .eq('source_text', text.toLowerCase())
+        .single();
 
-    if (cached) {
-      res.status(200).json({ translatedText: cached.translated_text, source: 'cache' });
-      return;
+      if (cached) {
+        res.status(200).json({ translatedText: cached.translated_text, source: 'cache' });
+        return;
+      }
+    } catch (e) {
+      console.warn("Cache fetch failed, continuing:", e);
     }
 
     // 2. Call DeepL API (if not in cache)
     const authKey = process.env.DEEPL_AUTH_KEY;
     if (!authKey) {
-      res.status(500).json({ error: 'DeepL API key missing (set DEEPL_AUTH_KEY in Vercel)' });
+      res.status(500).json({ error: 'DeepL API key missing (set DEEPL_AUTH_KEY in Vercel Environment Variables)' });
       return;
     }
 
@@ -125,12 +133,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const translatedText = deeplData.translations[0].text;
 
     // 3. Save result to Cache
-    await supabase.from('translations_cache').insert({
-      source_language: sourceLang,
-      target_language: targetLang,
-      source_text: text.toLowerCase(),
-      translated_text: translatedText
-    });
+    try {
+      await supabase.from('translations_cache').insert({
+        source_language: sourceLang,
+        target_language: targetLang,
+        source_text: text.toLowerCase(),
+        translated_text: translatedText
+      });
+    } catch (e) {
+      console.warn("Cache insert failed, continuing:", e);
+    }
 
     res.status(200).json({ translatedText, source: 'api' });
   } catch (error: any) {

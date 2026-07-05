@@ -4,7 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>lingora</title>
+    <meta name="theme-color" content="#1e1e1e" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>Lingora</title>
+    <!-- Force Cache Busting Script -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          let hasUnregistered = false;
+          for (let registration of registrations) {
+            registration.unregister();
+            hasUnregistered = true;
+          }
+          if (hasUnregistered && !window.location.search.includes('cleared=1')) {
+            window.location.href = window.location.pathname + '?cleared=1';
+          }
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
